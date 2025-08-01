@@ -11,14 +11,14 @@ interface Task {
   createdAt: Date;
 }
 
-interface GoalsDialogProps {
+interface TodoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const GoalsDialog = ({ open, onOpenChange }: GoalsDialogProps) => {
+export const TodoDialog = ({ open, onOpenChange }: TodoDialogProps) => {
   const [tasks, setTasks] = useState<Task[]>(() => {
-    const savedTasks = localStorage.getItem('goals-tasks-data');
+    const savedTasks = localStorage.getItem('Todo-tasks-data');
     if (savedTasks) {
       try {
         const parsedTasks = JSON.parse(savedTasks);
@@ -42,7 +42,7 @@ export const GoalsDialog = ({ open, onOpenChange }: GoalsDialogProps) => {
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    localStorage.setItem('goals-tasks-data', JSON.stringify(tasks));
+    localStorage.setItem('Todo-tasks-data', JSON.stringify(tasks));
   }, [tasks]);
 
   const addTask = () => {
@@ -88,7 +88,7 @@ export const GoalsDialog = ({ open, onOpenChange }: GoalsDialogProps) => {
           <Dialog.Portal>
             <Dialog.Overlay asChild>
               <motion.div
-                className='fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]'
+                className='fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[100]'
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -121,7 +121,7 @@ export const GoalsDialog = ({ open, onOpenChange }: GoalsDialogProps) => {
                 <div className='flex items-center justify-between mb-6'>
                   <div>
                     <Dialog.Title className='text-2xl font-bold text-gray-600 mb-1'>
-                      Goals & Tasks
+                      Todo List
                     </Dialog.Title>
                     {totalTasks > 0 && (
                       <p className='text-sm text-gray-500'>

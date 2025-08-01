@@ -35,13 +35,19 @@ const ambienceTracks: AmbienceTrack[] = [
     youtubeId: 'WHPEKLQID4U',
     category: 'Nature',
   },
-
   {
     id: '2',
     title: 'Thunderstorm',
     description: 'Gentle thunderstorm for sleep and relaxation',
     youtubeId: 'mPZkdNFkNps',
     category: 'Nature',
+  },
+  {
+    id: '3',
+    title: 'Clock Ticking',
+    description: 'Ticking Clock Sound for relaxation',
+    youtubeId: 'xyCQFLOSWGc',
+    category: 'Clock',
   },
 ];
 
@@ -370,7 +376,7 @@ export const MusicDialog = ({
             <Dialog.Portal>
               <Dialog.Overlay asChild>
                 <motion.div
-                  className='fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]'
+                  className='fixed inset-0  bg-gray-900/50 backdrop-blur-sm z-[100]'
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

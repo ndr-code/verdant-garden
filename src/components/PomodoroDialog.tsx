@@ -91,7 +91,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
           <Dialog.Portal>
             <Dialog.Overlay asChild>
               <motion.div
-                className='fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]'
+                className='fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[100]'
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}

@@ -12,7 +12,7 @@ import { Grid } from './components/Grid';
 import { ClockDialog } from './components/ClockDialog';
 import { PomodoroDialog } from './components/PomodoroDialog';
 import { NotesDialog } from './components/NotesDialog';
-import { GoalsDialog } from './components/GoalsDialog';
+import { TodoDialog } from './components/TodoDialog';
 import { MusicDialog } from './components/MusicDialog';
 import { RadioDialog } from './components/RadioDialog';
 import { BottomDock } from './components/BottomDock';
@@ -61,7 +61,7 @@ function App() {
   const [showClockDialog, setShowClockDialog] = useState(false);
   const [showPomodoroDialog, setShowPomodoroDialog] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
-  const [showGoalsDialog, setShowGoalsDialog] = useState(false);
+  const [showTodoDialog, setShowTodoDialog] = useState(false);
   const [showMusicDialog, setShowMusicDialog] = useState(false);
   const [showRadioDialog, setShowRadioDialog] = useState(false);
   const [isMusicMinimized, setIsMusicMinimized] = useState(false);
@@ -72,7 +72,11 @@ function App() {
   const gridHeight = (bounds.maxY - bounds.minY + 1) * (BOX_SIZE + GAP) - GAP;
 
   return (
-    <div className='min-h-screen bg-gray-900 flex flex-col relative'>
+    <div
+      className={`min-h-screen bg-gray-900 flex flex-col relative ${
+        editMode ? 'border-4 border-white/80' : ''
+      }`}
+    >
       {/* Main Content Area */}
       <div className='flex-1 flex items-center justify-center p-8 relative'>
         <ControlButtons
@@ -180,7 +184,7 @@ function App() {
           onOpenChange={setShowPomodoroDialog}
         />
         <NotesDialog open={showNotesDialog} onOpenChange={setShowNotesDialog} />
-        <GoalsDialog open={showGoalsDialog} onOpenChange={setShowGoalsDialog} />
+        <TodoDialog open={showTodoDialog} onOpenChange={setShowTodoDialog} />
         <RadioDialog open={showRadioDialog} onOpenChange={setShowRadioDialog} />
         <MusicDialog
           open={showMusicDialog}
@@ -195,7 +199,7 @@ function App() {
         onClockClick={() => setShowClockDialog(true)}
         onTimerClick={() => setShowPomodoroDialog(true)}
         onNotesClick={() => setShowNotesDialog(true)}
-        onGoalsClick={() => setShowGoalsDialog(true)}
+        onTodoClick={() => setShowTodoDialog(true)}
         onMusicClick={() => {
           if (isMusicMinimized) {
             setIsMusicMinimized(false);
