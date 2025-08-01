@@ -120,13 +120,25 @@ export const NotesDialog = ({ open, onOpenChange }: NotesDialogProps) => {
                   <Dialog.Title className='text-2xl font-bold text-gray-600'>
                     Notes
                   </Dialog.Title>
-                  <button
-                    onClick={() => setShowAddForm(true)}
-                    className='flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors cursor-pointer'
-                  >
-                    <Plus size={16} />
-                    Add Note
-                  </button>
+                  <div className='flex items-center gap-3'>
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      className='flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors cursor-pointer'
+                    >
+                      <Plus size={16} />
+                      Add Note
+                    </button>
+                    <Dialog.Close asChild>
+                      <motion.button
+                        className='p-2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer rounded-full hover:bg-gray-100'
+                        aria-label='Close'
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Cross2Icon className='w-4 h-4' />
+                      </motion.button>
+                    </Dialog.Close>
+                  </div>
                 </div>
 
                 {/* Add Note Form */}
@@ -268,17 +280,6 @@ export const NotesDialog = ({ open, onOpenChange }: NotesDialogProps) => {
                     </div>
                   )}
                 </div>
-
-                <Dialog.Close asChild>
-                  <motion.button
-                    className='absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer'
-                    aria-label='Close'
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Cross2Icon className='w-4 h-4' />
-                  </motion.button>
-                </Dialog.Close>
               </motion.div>
             </Dialog.Content>
           </Dialog.Portal>

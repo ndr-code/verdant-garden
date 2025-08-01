@@ -1,4 +1,11 @@
-import { Clock, Timer, StickyNote, Target, Music, Radio } from 'lucide-react';
+import {
+  Clock,
+  Timer,
+  SquarePen,
+  ListChecks,
+  AudioLines,
+  Radio,
+} from 'lucide-react';
 import { Tooltip, TooltipProvider } from './Tooltip';
 
 interface BottomDockProps {
@@ -36,21 +43,21 @@ export const BottomDock = ({
         </Tooltip>
 
         <Tooltip content='Notes'>
-          <StickyNote
+          <SquarePen
             className='w-8 h-8 text-white cursor-pointer hover:text-amber-300 transition-colors'
             onClick={onNotesClick}
           />
         </Tooltip>
 
         <Tooltip content='Goals'>
-          <Target
+          <ListChecks
             className='w-8 h-8 text-white cursor-pointer hover:text-amber-300 transition-colors'
             onClick={onGoalsClick}
           />
         </Tooltip>
 
         <Tooltip content='Music'>
-          <Music
+          <AudioLines
             className='w-8 h-8 text-white cursor-pointer hover:text-amber-300 transition-colors'
             onClick={onMusicClick}
           />

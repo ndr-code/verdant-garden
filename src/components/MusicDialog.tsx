@@ -9,6 +9,7 @@ import {
   VolumeX,
   Minimize2,
   Maximize2,
+  SkipForward,
 } from 'lucide-react';
 
 interface AmbienceTrack {
@@ -29,41 +30,14 @@ interface MusicDialogProps {
 const ambienceTracks: AmbienceTrack[] = [
   {
     id: '1',
-    title: 'Rain Forest Sounds',
-    description: 'Relaxing rain and forest ambience for focus and sleep',
-    youtubeId: 'nDq6TstdEi8',
-    category: 'Nature',
-  },
-  {
-    id: '2',
-    title: 'Coffee Shop Ambience',
-    description: 'Cozy coffee shop sounds for productivity',
-    youtubeId: 'h2zkV-l_TbY',
-    category: 'Urban',
-  },
-  {
-    id: '3',
     title: 'Ocean Waves',
     description: 'Peaceful ocean waves for relaxation',
     youtubeId: 'WHPEKLQID4U',
     category: 'Nature',
   },
+
   {
-    id: '4',
-    title: 'Fireplace Crackling',
-    description: 'Warm fireplace sounds for cozy atmosphere',
-    youtubeId: 'L_LUpnjgPso',
-    category: 'Cozy',
-  },
-  {
-    id: '5',
-    title: 'Library Ambience',
-    description: 'Quiet library atmosphere for deep focus',
-    youtubeId: 'jWBmtGAK-7M',
-    category: 'Study',
-  },
-  {
-    id: '6',
+    id: '2',
     title: 'Thunderstorm',
     description: 'Gentle thunderstorm for sleep and relaxation',
     youtubeId: 'mPZkdNFkNps',
@@ -71,25 +45,29 @@ const ambienceTracks: AmbienceTrack[] = [
   },
 ];
 
-const categories = ['All', 'Nature', 'Urban', 'Cozy', 'Study'];
-
 // Mini Player Component - moved outside to prevent re-animation
 const MiniPlayer = ({
   selectedTrack,
   isPlaying,
   isMuted,
+  volume,
   onTogglePlay,
   onToggleMute,
+  onVolumeChange,
   onMaximize,
   onStop,
+  onNext,
 }: {
   selectedTrack: AmbienceTrack;
   isPlaying: boolean;
   isMuted: boolean;
+  volume: number;
   onTogglePlay: () => void;
   onToggleMute: () => void;
+  onVolumeChange: (volume: number) => void;
   onMaximize: () => void;
   onStop: () => void;
+  onNext: () => void;
 }) => (
   <motion.div
     className='fixed bottom-20 right-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-4 w-80 z-[102]'
@@ -98,7 +76,7 @@ const MiniPlayer = ({
     exit={{ opacity: 0, y: 50, scale: 0.8 }}
     transition={{ duration: 0.3 }}
   >
-    <div className='flex items-center gap-3'>
+    <div className='flex items-center gap-3 mb-2'>
       <div className='flex-1'>
         <h4 className='font-semibold text-gray-800 text-sm truncate'>
           {selectedTrack?.title}
@@ -117,6 +95,13 @@ const MiniPlayer = ({
           }`}
         >
           {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+        </button>
+        <button
+          onClick={onNext}
+          className='p-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors cursor-pointer'
+          title='Next Track'
+        >
+          <SkipForward size={14} />
         </button>
         <button
           onClick={onToggleMute}
@@ -138,6 +123,23 @@ const MiniPlayer = ({
         </button>
       </div>
     </div>
+
+    {/* Volume Slider */}
+    <div className='flex items-center gap-2'>
+      <Volume2 size={12} className='text-gray-500' />
+      <input
+        type='range'
+        min='0'
+        max='100'
+        value={volume}
+        onChange={(e) => onVolumeChange(Number(e.target.value))}
+        className='flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
+        style={{
+          background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume}%, #e5e7eb ${volume}%, #e5e7eb 100%)`,
+        }}
+      />
+      <span className='text-xs text-gray-500 w-8 text-right'>{volume}</span>
+    </div>
   </motion.div>
 );
 
@@ -153,7 +155,6 @@ export const MusicDialog = ({
       return saved ? JSON.parse(saved) : null;
     }
   );
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [isPlaying, setIsPlaying] = useState(() => {
     const saved = localStorage.getItem('music-is-playing');
     return saved ? JSON.parse(saved) : false;
@@ -161,6 +162,10 @@ export const MusicDialog = ({
   const [isMuted, setIsMuted] = useState(() => {
     const saved = localStorage.getItem('music-is-muted');
     return saved ? JSON.parse(saved) : false;
+  });
+  const [volume, setVolume] = useState(() => {
+    const saved = localStorage.getItem('music-volume');
+    return saved ? JSON.parse(saved) : 50;
   });
 
   // Save state to localStorage
@@ -176,10 +181,60 @@ export const MusicDialog = ({
     localStorage.setItem('music-is-muted', JSON.stringify(isMuted));
   }, [isMuted]);
 
-  const filteredTracks =
-    selectedCategory === 'All'
-      ? ambienceTracks
-      : ambienceTracks.filter((track) => track.category === selectedCategory);
+  useEffect(() => {
+    localStorage.setItem('music-volume', JSON.stringify(volume));
+
+    // Update YouTube player volume when volume changes
+    const iframe = document.querySelector(
+      '#youtube-player'
+    ) as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(
+        `{"event":"command","func":"setVolume","args":[${volume}]}`,
+        'https://www.youtube.com'
+      );
+    }
+  }, [volume]);
+
+  // Handle play/pause state changes
+  useEffect(() => {
+    const iframe = document.querySelector(
+      '#youtube-player'
+    ) as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      if (isPlaying) {
+        iframe.contentWindow.postMessage(
+          '{"event":"command","func":"playVideo","args":""}',
+          'https://www.youtube.com'
+        );
+      } else {
+        iframe.contentWindow.postMessage(
+          '{"event":"command","func":"pauseVideo","args":""}',
+          'https://www.youtube.com'
+        );
+      }
+    }
+  }, [isPlaying]);
+
+  // Handle mute state changes
+  useEffect(() => {
+    const iframe = document.querySelector(
+      '#youtube-player'
+    ) as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      if (isMuted) {
+        iframe.contentWindow.postMessage(
+          '{"event":"command","func":"mute","args":""}',
+          'https://www.youtube.com'
+        );
+      } else {
+        iframe.contentWindow.postMessage(
+          '{"event":"command","func":"unMute","args":""}',
+          'https://www.youtube.com'
+        );
+      }
+    }
+  }, [isMuted]);
 
   const playTrack = (track: AmbienceTrack) => {
     setSelectedTrack(track);
@@ -194,12 +249,40 @@ export const MusicDialog = ({
     setIsMuted(!isMuted);
   };
 
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+
+    // Update iframe volume via postMessage
+    const iframe = document.querySelector(
+      '#youtube-player'
+    ) as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(
+        `{"event":"command","func":"setVolume","args":[${newVolume}]}`,
+        'https://www.youtube.com'
+      );
+    }
+  };
+
   const stopTrack = () => {
     setSelectedTrack(null);
     setIsPlaying(false);
     // Clear localStorage when stopping
     localStorage.removeItem('music-selected-track');
     localStorage.removeItem('music-is-playing');
+  };
+
+  const nextTrack = () => {
+    if (!selectedTrack) return;
+
+    const currentIndex = ambienceTracks.findIndex(
+      (track) => track.id === selectedTrack.id
+    );
+    const nextIndex = (currentIndex + 1) % ambienceTracks.length;
+    const nextTrackToPlay = ambienceTracks[nextIndex];
+
+    setSelectedTrack(nextTrackToPlay);
+    setIsPlaying(true);
   };
 
   const handleMinimize = () => {
@@ -229,6 +312,7 @@ export const MusicDialog = ({
       {selectedTrack && (
         <div className='fixed -top-full -left-full w-0 h-0 overflow-hidden pointer-events-none z-[-1]'>
           <iframe
+            id='youtube-player'
             key={selectedTrack.youtubeId} // Force re-mount only when track changes
             width='320'
             height='180'
@@ -236,11 +320,27 @@ export const MusicDialog = ({
               selectedTrack.youtubeId
             }?autoplay=${isPlaying ? 1 : 0}&mute=${
               isMuted ? 1 : 0
-            }&loop=1&playlist=${selectedTrack.youtubeId}&enablejsapi=1`}
+            }&loop=1&playlist=${selectedTrack.youtubeId}&enablejsapi=1&origin=${
+              window.location.origin
+            }`}
             title={selectedTrack.title}
             frameBorder='0'
             allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
             allowFullScreen
+            onLoad={() => {
+              // Set initial volume when iframe loads
+              setTimeout(() => {
+                const iframe = document.querySelector(
+                  '#youtube-player'
+                ) as HTMLIFrameElement;
+                if (iframe && iframe.contentWindow) {
+                  iframe.contentWindow.postMessage(
+                    `{"event":"command","func":"setVolume","args":[${volume}]}`,
+                    'https://www.youtube.com'
+                  );
+                }
+              }, 1000);
+            }}
           />
         </div>
       )}
@@ -252,10 +352,13 @@ export const MusicDialog = ({
             selectedTrack={selectedTrack}
             isPlaying={isPlaying}
             isMuted={isMuted}
+            volume={volume}
             onTogglePlay={togglePlay}
             onToggleMute={toggleMute}
+            onVolumeChange={handleVolumeChange}
             onMaximize={handleMaximize}
             onStop={stopTrack}
+            onNext={nextTrack}
           />
         )}
       </AnimatePresence>
@@ -324,6 +427,13 @@ export const MusicDialog = ({
                               )}
                             </button>
                             <button
+                              onClick={nextTrack}
+                              className='p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors cursor-pointer'
+                              title='Next Track'
+                            >
+                              <SkipForward size={16} />
+                            </button>
+                            <button
                               onClick={toggleMute}
                               className='p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
                             >
@@ -332,12 +442,6 @@ export const MusicDialog = ({
                               ) : (
                                 <Volume2 size={16} />
                               )}
-                            </button>
-                            <button
-                              onClick={stopTrack}
-                              className='px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors cursor-pointer text-sm'
-                            >
-                              Stop
                             </button>
                           </div>
                         )}
@@ -388,7 +492,7 @@ export const MusicDialog = ({
                         <h3 className='text-lg font-semibold text-gray-800 mb-2'>
                           Now Playing: {selectedTrack.title}
                         </h3>
-                        <div className='aspect-video bg-gradient-to-br from-blue-900 via-purple-900 to-blue-800 rounded-lg overflow-hidden relative flex items-center justify-center'>
+                        <div className='h-60 bg-gradient-to-br from-blue-900 via-purple-900 to-blue-800 rounded-lg overflow-hidden relative flex items-center justify-center'>
                           <div className='text-center text-white'>
                             <div className='w-16 h-16 mx-auto mb-4 relative'>
                               <div
@@ -432,55 +536,12 @@ export const MusicDialog = ({
                               </span>
                             </div>
                           </div>
-                          {/* Visual audio waves */}
-                          {isPlaying && (
-                            <div className='absolute bottom-4 left-4 right-4 flex items-end justify-center gap-1 h-8'>
-                              {[...Array(20)].map((_, i) => (
-                                <motion.div
-                                  key={i}
-                                  className='bg-white/40 rounded-full w-1'
-                                  animate={{
-                                    height: [
-                                      Math.random() * 20 + 5,
-                                      Math.random() * 30 + 10,
-                                      Math.random() * 25 + 5,
-                                    ],
-                                  }}
-                                  transition={{
-                                    duration: 0.5 + Math.random() * 0.5,
-                                    repeat: Infinity,
-                                    repeatType: 'reverse',
-                                  }}
-                                />
-                              ))}
-                            </div>
-                          )}
                         </div>
                       </motion.div>
                     )}
-
-                    {/* Category Filter */}
-                    <div className='mb-6'>
-                      <div className='flex gap-2 flex-wrap'>
-                        {categories.map((category) => (
-                          <button
-                            key={category}
-                            onClick={() => setSelectedCategory(category)}
-                            className={`px-4 py-2 rounded-full transition-colors cursor-pointer ${
-                              selectedCategory === category
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                            }`}
-                          >
-                            {category}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
                     {/* Tracks Grid */}
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                      {filteredTracks.map((track, index) => (
+                      {ambienceTracks.map((track, index) => (
                         <motion.div
                           key={track.id}
                           className={`p-4 border rounded-lg transition-all cursor-pointer ${
