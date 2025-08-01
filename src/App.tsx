@@ -14,6 +14,7 @@ import { PomodoroDialog } from './components/PomodoroDialog';
 import { NotesDialog } from './components/NotesDialog';
 import { GoalsDialog } from './components/GoalsDialog';
 import { MusicDialog } from './components/MusicDialog';
+import { RadioDialog } from './components/RadioDialog';
 import { BottomDock } from './components/BottomDock';
 
 // Import custom hooks and utilities
@@ -62,6 +63,7 @@ function App() {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [showGoalsDialog, setShowGoalsDialog] = useState(false);
   const [showMusicDialog, setShowMusicDialog] = useState(false);
+  const [showRadioDialog, setShowRadioDialog] = useState(false);
   const [isMusicMinimized, setIsMusicMinimized] = useState(false);
 
   // Derived state
@@ -179,6 +181,7 @@ function App() {
         />
         <NotesDialog open={showNotesDialog} onOpenChange={setShowNotesDialog} />
         <GoalsDialog open={showGoalsDialog} onOpenChange={setShowGoalsDialog} />
+        <RadioDialog open={showRadioDialog} onOpenChange={setShowRadioDialog} />
         <MusicDialog
           open={showMusicDialog}
           onOpenChange={setShowMusicDialog}
@@ -201,6 +204,7 @@ function App() {
             setShowMusicDialog(true);
           }
         }}
+        onRadioClick={() => setShowRadioDialog(true)}
       />
     </div>
   );

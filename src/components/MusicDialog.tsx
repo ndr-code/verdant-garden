@@ -73,6 +73,74 @@ const ambienceTracks: AmbienceTrack[] = [
 
 const categories = ['All', 'Nature', 'Urban', 'Cozy', 'Study'];
 
+// Mini Player Component - moved outside to prevent re-animation
+const MiniPlayer = ({
+  selectedTrack,
+  isPlaying,
+  isMuted,
+  onTogglePlay,
+  onToggleMute,
+  onMaximize,
+  onStop,
+}: {
+  selectedTrack: AmbienceTrack;
+  isPlaying: boolean;
+  isMuted: boolean;
+  onTogglePlay: () => void;
+  onToggleMute: () => void;
+  onMaximize: () => void;
+  onStop: () => void;
+}) => (
+  <motion.div
+    className='fixed bottom-20 right-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-4 w-80 z-[102]'
+    initial={{ opacity: 0, y: 50, scale: 0.8 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    exit={{ opacity: 0, y: 50, scale: 0.8 }}
+    transition={{ duration: 0.3 }}
+  >
+    <div className='flex items-center gap-3'>
+      <div className='flex-1'>
+        <h4 className='font-semibold text-gray-800 text-sm truncate'>
+          {selectedTrack?.title}
+        </h4>
+        <p className='text-xs text-gray-600 truncate'>
+          {selectedTrack?.category}
+        </p>
+      </div>
+      <div className='flex items-center gap-1'>
+        <button
+          onClick={onTogglePlay}
+          className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+            isPlaying
+              ? 'bg-red-500 hover:bg-red-600 text-white'
+              : 'bg-green-500 hover:bg-green-600 text-white'
+          }`}
+        >
+          {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+        </button>
+        <button
+          onClick={onToggleMute}
+          className='p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
+        >
+          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+        </button>
+        <button
+          onClick={onMaximize}
+          className='p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors cursor-pointer'
+        >
+          <Maximize2 size={14} />
+        </button>
+        <button
+          onClick={onStop}
+          className='p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
+        >
+          <Cross2Icon className='w-3.5 h-3.5' />
+        </button>
+      </div>
+    </div>
+  </motion.div>
+);
+
 export const MusicDialog = ({
   open,
   onOpenChange,
@@ -155,80 +223,41 @@ export const MusicDialog = ({
     }
   };
 
-  // Mini Player Component
-  const MiniPlayer = () => (
-    <motion.div
-      className='fixed bottom-20 right-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-4 w-80 z-[102]'
-      initial={{ opacity: 0, y: 50, scale: 0.8 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 50, scale: 0.8 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className='flex items-center gap-3'>
-        <div className='flex-1'>
-          <h4 className='font-semibold text-gray-800 text-sm truncate'>
-            {selectedTrack?.title}
-          </h4>
-          <p className='text-xs text-gray-600 truncate'>
-            {selectedTrack?.category}
-          </p>
-        </div>
-        <div className='flex items-center gap-1'>
-          <button
-            onClick={togglePlay}
-            className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-              isPlaying
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-green-500 hover:bg-green-600 text-white'
-            }`}
-          >
-            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-          </button>
-          <button
-            onClick={toggleMute}
-            className='p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
-          >
-            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-          </button>
-          <button
-            onClick={handleMaximize}
-            className='p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors cursor-pointer'
-          >
-            <Maximize2 size={14} />
-          </button>
-          <button
-            onClick={stopTrack}
-            className='p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
-          >
-            <Cross2Icon className='w-3.5 h-3.5' />
-          </button>
-        </div>
-      </div>
-      {/* Hidden iframe for background music */}
+  return (
+    <>
+      {/* Persistent iframe for continuous music playback */}
       {selectedTrack && (
-        <div className='hidden'>
+        <div className='fixed -top-full -left-full w-0 h-0 overflow-hidden pointer-events-none z-[-1]'>
           <iframe
-            width='0'
-            height='0'
+            key={selectedTrack.youtubeId} // Force re-mount only when track changes
+            width='320'
+            height='180'
             src={`https://www.youtube.com/embed/${
               selectedTrack.youtubeId
             }?autoplay=${isPlaying ? 1 : 0}&mute=${
               isMuted ? 1 : 0
-            }&loop=1&playlist=${selectedTrack.youtubeId}`}
+            }&loop=1&playlist=${selectedTrack.youtubeId}&enablejsapi=1`}
             title={selectedTrack.title}
             frameBorder='0'
             allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+            allowFullScreen
           />
         </div>
       )}
-    </motion.div>
-  );
 
-  return (
-    <>
       {/* Mini Player when minimized */}
       <AnimatePresence>
-        {isMinimized && selectedTrack && <MiniPlayer />}
+        {isMinimized && selectedTrack && (
+          <MiniPlayer
+            selectedTrack={selectedTrack}
+            isPlaying={isPlaying}
+            isMuted={isMuted}
+            onTogglePlay={togglePlay}
+            onToggleMute={toggleMute}
+            onMaximize={handleMaximize}
+            onStop={stopTrack}
+          />
+        )}
       </AnimatePresence>
 
       {/* Full Dialog */}
@@ -359,21 +388,73 @@ export const MusicDialog = ({
                         <h3 className='text-lg font-semibold text-gray-800 mb-2'>
                           Now Playing: {selectedTrack.title}
                         </h3>
-                        <div className='aspect-video bg-black rounded-lg overflow-hidden'>
-                          <iframe
-                            width='100%'
-                            height='100%'
-                            src={`https://www.youtube.com/embed/${
-                              selectedTrack.youtubeId
-                            }?autoplay=${isPlaying ? 1 : 0}&mute=${
-                              isMuted ? 1 : 0
-                            }&loop=1&playlist=${selectedTrack.youtubeId}`}
-                            title={selectedTrack.title}
-                            frameBorder='0'
-                            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                            allowFullScreen
-                            className='w-full h-full'
-                          />
+                        <div className='aspect-video bg-gradient-to-br from-blue-900 via-purple-900 to-blue-800 rounded-lg overflow-hidden relative flex items-center justify-center'>
+                          <div className='text-center text-white'>
+                            <div className='w-16 h-16 mx-auto mb-4 relative'>
+                              <div
+                                className={`absolute inset-0 rounded-full border-4 border-white/30 ${
+                                  isPlaying ? 'animate-pulse' : ''
+                                }`}
+                              ></div>
+                              <div className='absolute inset-2 rounded-full bg-white/20 flex items-center justify-center'>
+                                {isPlaying ? (
+                                  <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{
+                                      duration: 3,
+                                      repeat: Infinity,
+                                      ease: 'linear',
+                                    }}
+                                  >
+                                    <Volume2 size={24} />
+                                  </motion.div>
+                                ) : (
+                                  <Pause size={24} />
+                                )}
+                              </div>
+                            </div>
+                            <h4 className='text-lg font-semibold mb-1'>
+                              {selectedTrack.title}
+                            </h4>
+                            <p className='text-sm text-white/80'>
+                              {selectedTrack.description}
+                            </p>
+                            <div className='mt-4 flex items-center justify-center gap-2'>
+                              <span className='px-3 py-1 bg-white/20 rounded-full text-sm'>
+                                {selectedTrack.category}
+                              </span>
+                              <span
+                                className={`px-3 py-1 rounded-full text-sm ${
+                                  isPlaying ? 'bg-green-500' : 'bg-gray-500'
+                                }`}
+                              >
+                                {isPlaying ? 'Playing' : 'Paused'}
+                              </span>
+                            </div>
+                          </div>
+                          {/* Visual audio waves */}
+                          {isPlaying && (
+                            <div className='absolute bottom-4 left-4 right-4 flex items-end justify-center gap-1 h-8'>
+                              {[...Array(20)].map((_, i) => (
+                                <motion.div
+                                  key={i}
+                                  className='bg-white/40 rounded-full w-1'
+                                  animate={{
+                                    height: [
+                                      Math.random() * 20 + 5,
+                                      Math.random() * 30 + 10,
+                                      Math.random() * 25 + 5,
+                                    ],
+                                  }}
+                                  transition={{
+                                    duration: 0.5 + Math.random() * 0.5,
+                                    repeat: Infinity,
+                                    repeatType: 'reverse',
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     )}

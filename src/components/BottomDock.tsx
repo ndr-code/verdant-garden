@@ -1,4 +1,4 @@
-import { Clock, Timer, StickyNote, Target, Music } from 'lucide-react';
+import { Clock, Timer, StickyNote, Target, Music, Radio } from 'lucide-react';
 import { Tooltip, TooltipProvider } from './Tooltip';
 
 interface BottomDockProps {
@@ -7,6 +7,7 @@ interface BottomDockProps {
   onNotesClick: () => void;
   onGoalsClick: () => void;
   onMusicClick: () => void;
+  onRadioClick: () => void;
 }
 
 export const BottomDock = ({
@@ -15,6 +16,7 @@ export const BottomDock = ({
   onNotesClick,
   onGoalsClick,
   onMusicClick,
+  onRadioClick,
 }: BottomDockProps) => {
   return (
     <TooltipProvider>
@@ -51,6 +53,12 @@ export const BottomDock = ({
           <Music
             className='w-8 h-8 text-white cursor-pointer hover:text-amber-300 transition-colors'
             onClick={onMusicClick}
+          />
+        </Tooltip>
+        <Tooltip content='Radio'>
+          <Radio
+            className='w-8 h-8 text-white cursor-pointer hover:text-amber-300 transition-colors'
+            onClick={onRadioClick}
           />
         </Tooltip>
       </div>

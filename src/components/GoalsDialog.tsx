@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,10 +17,33 @@ interface GoalsDialogProps {
 }
 
 export const GoalsDialog = ({ open, onOpenChange }: GoalsDialogProps) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const savedTasks = localStorage.getItem('goals-tasks-data');
+    if (savedTasks) {
+      try {
+        const parsedTasks = JSON.parse(savedTasks);
+        // Convert createdAt string back to Date object
+        return parsedTasks.map(
+          (task: Omit<Task, 'createdAt'> & { createdAt: string }) => ({
+            ...task,
+            createdAt: new Date(task.createdAt),
+          })
+        );
+      } catch (error) {
+        console.error('Error parsing saved tasks:', error);
+        return [];
+      }
+    }
+    return [];
+  });
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Save tasks to localStorage whenever tasks change
+  useEffect(() => {
+    localStorage.setItem('goals-tasks-data', JSON.stringify(tasks));
+  }, [tasks]);
 
   const addTask = () => {
     if (newTaskTitle.trim()) {

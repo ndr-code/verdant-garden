@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,10 +17,33 @@ interface NotesDialogProps {
 }
 
 export const NotesDialog = ({ open, onOpenChange }: NotesDialogProps) => {
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<Note[]>(() => {
+    const savedNotes = localStorage.getItem('notes-data');
+    if (savedNotes) {
+      try {
+        const parsedNotes = JSON.parse(savedNotes);
+        // Convert createdAt string back to Date object
+        return parsedNotes.map(
+          (note: Omit<Note, 'createdAt'> & { createdAt: string }) => ({
+            ...note,
+            createdAt: new Date(note.createdAt),
+          })
+        );
+      } catch (error) {
+        console.error('Error parsing saved notes:', error);
+        return [];
+      }
+    }
+    return [];
+  });
   const [newNote, setNewNote] = useState({ title: '', content: '' });
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Save notes to localStorage whenever notes change
+  useEffect(() => {
+    localStorage.setItem('notes-data', JSON.stringify(notes));
+  }, [notes]);
 
   const addNote = () => {
     if (newNote.title.trim() || newNote.content.trim()) {
