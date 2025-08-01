@@ -11,6 +11,9 @@ import { ColorPicker } from './components/ColorPicker';
 import { Grid } from './components/Grid';
 import { ClockDialog } from './components/ClockDialog';
 import { PomodoroDialog } from './components/PomodoroDialog';
+import { NotesDialog } from './components/NotesDialog';
+import { GoalsDialog } from './components/GoalsDialog';
+import { MusicDialog } from './components/MusicDialog';
 import { BottomDock } from './components/BottomDock';
 
 // Import custom hooks and utilities
@@ -56,6 +59,10 @@ function App() {
   // Dialog state
   const [showClockDialog, setShowClockDialog] = useState(false);
   const [showPomodoroDialog, setShowPomodoroDialog] = useState(false);
+  const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [showGoalsDialog, setShowGoalsDialog] = useState(false);
+  const [showMusicDialog, setShowMusicDialog] = useState(false);
+  const [isMusicMinimized, setIsMusicMinimized] = useState(false);
 
   // Derived state
   const bounds = getBounds(boxes);
@@ -170,12 +177,30 @@ function App() {
           open={showPomodoroDialog}
           onOpenChange={setShowPomodoroDialog}
         />
+        <NotesDialog open={showNotesDialog} onOpenChange={setShowNotesDialog} />
+        <GoalsDialog open={showGoalsDialog} onOpenChange={setShowGoalsDialog} />
+        <MusicDialog
+          open={showMusicDialog}
+          onOpenChange={setShowMusicDialog}
+          isMinimized={isMusicMinimized}
+          onMinimize={setIsMusicMinimized}
+        />
       </div>
 
       {/* Bottom Dock */}
       <BottomDock
         onClockClick={() => setShowClockDialog(true)}
         onTimerClick={() => setShowPomodoroDialog(true)}
+        onNotesClick={() => setShowNotesDialog(true)}
+        onGoalsClick={() => setShowGoalsDialog(true)}
+        onMusicClick={() => {
+          if (isMusicMinimized) {
+            setIsMusicMinimized(false);
+            setShowMusicDialog(true);
+          } else {
+            setShowMusicDialog(true);
+          }
+        }}
       />
     </div>
   );

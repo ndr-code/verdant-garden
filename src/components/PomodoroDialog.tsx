@@ -10,8 +10,8 @@ interface PomodoroDialogProps {
 }
 
 export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
-  const [workDuration, setWorkDuration] = useState(25); 
-  const [breakDuration, setBreakDuration] = useState(5); 
+  const [workDuration, setWorkDuration] = useState(25);
+  const [breakDuration, setBreakDuration] = useState(5);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [session, setSession] = useState<'work' | 'break'>('work');
@@ -25,10 +25,10 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
       }, 1000);
     } else if (timeLeft === 0) {
       setIsRunning(false);
-     
+
       if (session === 'work') {
         setSession('break');
-        setTimeLeft(breakDuration * 60); 
+        setTimeLeft(breakDuration * 60);
       } else {
         setSession('work');
         setTimeLeft(workDuration * 60);
@@ -141,7 +141,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
                         onClick={() =>
                           updateWorkDuration(Math.max(1, workDuration - 1))
                         }
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700'
+                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
                         disabled={isRunning}
                       >
                         -
@@ -151,7 +151,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
                       </span>
                       <button
                         onClick={() => updateWorkDuration(workDuration + 1)}
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700'
+                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
                         disabled={isRunning}
                       >
                         +
@@ -168,7 +168,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
                         onClick={() =>
                           updateBreakDuration(Math.max(1, breakDuration - 1))
                         }
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700'
+                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
                         disabled={isRunning}
                       >
                         -
@@ -178,7 +178,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
                       </span>
                       <button
                         onClick={() => updateBreakDuration(breakDuration + 1)}
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700'
+                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
                         disabled={isRunning}
                       >
                         +
@@ -216,7 +216,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
                   >
                     <button
                       onClick={toggleTimer}
-                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-colors ${
+                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-colors cursor-pointer ${
                         isRunning
                           ? 'bg-red-500 hover:bg-red-600 text-white'
                           : 'bg-green-500 hover:bg-green-600 text-white'
@@ -227,7 +227,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
 
                     <button
                       onClick={resetTimer}
-                      className='flex items-center justify-center w-12 h-12 rounded-full bg-gray-500 hover:bg-gray-600 text-white transition-colors'
+                      className='flex items-center justify-center w-12 h-12 rounded-full bg-gray-500 hover:bg-gray-600 text-white transition-colors cursor-pointer'
                     >
                       <RotateCcw size={20} />
                     </button>
@@ -241,7 +241,7 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
                   >
                     <button
                       onClick={switchSession}
-                      className='text-sm text-gray-600 hover:text-gray-800 transition-colors underline'
+                      className='text-sm text-gray-600 hover:text-gray-800 transition-colors underline cursor-pointer'
                     >
                       Switch to {session === 'work' ? 'Break' : 'Work'} Session
                     </button>

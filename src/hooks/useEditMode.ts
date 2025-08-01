@@ -381,7 +381,7 @@ export const useEditMode = () => {
     historyIndex,
     contextMenu,
     colorPicker,
-    
+
     // Actions
     toggleEditMode,
     undo,
@@ -393,14 +393,14 @@ export const useEditMode = () => {
     unmergeBox,
     changeBoxColor,
     mergeBoxes,
-    
+
     // Utilities
     getGhostPositions,
-    
+
     // Event handlers
     handleColorHover,
     handleColorLeave,
-    
+
     // Setters (for event handlers)
     setShowResetDialog,
     setDragStartBox,
