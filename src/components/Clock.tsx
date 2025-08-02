@@ -36,7 +36,7 @@ export const Clock = ({
 
     if (totalArea >= 49) {
       // 7x7 and above
-      timeSize = 'text-9xl';
+      timeSize = 'text-8xl';
       dateSize = 'text-3xl';
     } else if (totalArea >= 36) {
       // 6x6

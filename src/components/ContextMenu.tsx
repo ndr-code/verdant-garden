@@ -29,6 +29,7 @@ export const ContextMenu = ({
 
   return (
     <div
+      data-context-menu
       className='fixed bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-[200]'
       style={{ left: x, top: y }}
       onClick={(e) => e.stopPropagation()}

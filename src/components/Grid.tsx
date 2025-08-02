@@ -28,6 +28,7 @@ interface GridProps {
   } | null;
   onAddBox: (x: number, y: number) => void;
   onAssignWidget: (boxId: string) => void;
+  onAssignWidgetByDrag?: (boxId: string, widgetType: string) => void;
   onClockWidgetClick: (boxId: string) => void;
   onPomodoroWidgetClick: (boxId: string) => void;
   onMouseDown: (e: React.MouseEvent, boxId: string) => void;
@@ -36,6 +37,8 @@ interface GridProps {
   onMouseLeave: (boxId: string) => void;
   onMouseUp: (e: React.MouseEvent) => void;
   onGhostBoxDrop?: (ghostX: number, ghostY: number) => void;
+  onWidgetDragEnterGrid?: () => void;
+  onWidgetDragLeaveGrid?: () => void;
 }
 
 const getPixelPosition = (
@@ -61,6 +64,7 @@ const Grid: React.FC<GridProps> = ({
   mergePreview,
   onAddBox,
   onAssignWidget,
+  onAssignWidgetByDrag,
   onClockWidgetClick,
   onPomodoroWidgetClick,
   onMouseDown,
@@ -69,6 +73,8 @@ const Grid: React.FC<GridProps> = ({
   onMouseLeave,
   onMouseUp,
   onGhostBoxDrop,
+  onWidgetDragEnterGrid,
+  onWidgetDragLeaveGrid,
 }) => {
   const renderWidgetContent = (box: GridBox) => {
     if (!box.widget) return null;
@@ -128,6 +134,24 @@ const Grid: React.FC<GridProps> = ({
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDrop = (e: React.DragEvent, boxId: string) => {
+    e.preventDefault();
+    const widgetType = e.dataTransfer.getData('widget-type');
+    if (widgetType && !editMode && onAssignWidgetByDrag) {
+      // Find the box and check if it doesn't already have a widget
+      const box = boxes.find((b) => b.id === boxId);
+      if (box && !box.widget) {
+        // Trigger widget assignment with specific type
+        onAssignWidgetByDrag(boxId, widgetType);
+      }
+    }
+  };
+
   return (
     <div
       className='relative'
@@ -138,6 +162,26 @@ const Grid: React.FC<GridProps> = ({
         position: 'absolute',
         left: '50%',
         top: '50%',
+      }}
+      onDragEnter={() => {
+        if (onWidgetDragEnterGrid) {
+          onWidgetDragEnterGrid();
+        }
+      }}
+      onDragLeave={(e) => {
+        if (onWidgetDragLeaveGrid) {
+          // Check if we're really leaving the grid (not just entering a child element)
+          const rect = e.currentTarget.getBoundingClientRect();
+          const isLeavingGrid =
+            e.clientX < rect.left ||
+            e.clientX > rect.right ||
+            e.clientY < rect.top ||
+            e.clientY > rect.bottom;
+
+          if (isLeavingGrid) {
+            onWidgetDragLeaveGrid();
+          }
+        }
       }}
     >
       {/* Ghost boxes */}
@@ -235,6 +279,8 @@ const Grid: React.FC<GridProps> = ({
               onMouseEnter={() => onMouseEnter(box.id)}
               onMouseLeave={() => onMouseLeave(box.id)}
               onMouseUp={onMouseUp}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, box.id)}
               draggable={false}
             >
               {/* Widget content */}

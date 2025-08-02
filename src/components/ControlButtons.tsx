@@ -29,7 +29,7 @@ export const ControlButtons = ({
         title={canUndo ? 'Undo (Ctrl+Z)' : 'No actions to undo'}
         className={`w-12 h-12 cursor-pointer rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0 ${
           !canUndo
-            ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
             : 'bg-gray-600 hover:bg-gray-700 text-white'
         }`}
       >
@@ -43,7 +43,7 @@ export const ControlButtons = ({
         title={canRedo ? 'Redo (Ctrl+Y)' : 'No actions to redo'}
         className={`w-12 h-12 cursor-pointer rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0 ${
           !canRedo
-            ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
             : 'bg-gray-600 hover:bg-gray-700 text-white'
         }`}
       >
@@ -73,7 +73,7 @@ export const ControlButtons = ({
       title={editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
       className={`w-12 h-12 cursor-pointer rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0 ${
         editMode
-          ? 'bg-gray-700 hover:bg-gray-800 text-white'
+          ? 'bg-red-700 hover:bg-red-800 text-white'
           : 'bg-gray-600 hover:bg-gray-700 text-white'
       }`}
     >

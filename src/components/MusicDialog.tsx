@@ -57,6 +57,20 @@ const ambienceTracks: AmbienceTrack[] = [
     youtubeId: 'TXzlmOqwsE8',
     category: 'Piano',
   },
+  {
+    id: '5',
+    title: 'Olafur Arnalds - Ágúst Rain',
+    description: 'Listen to the soothing sounds of rain and piano',
+    youtubeId: 'sD9fSNseEIU',
+    category: 'Piano',
+  },
+  {
+    id: '5',
+    title: 'Olafur Arnalds - Memories ',
+    description: 'Listen to Memories by Olafur Arnalds',
+    youtubeId: 'SNEO45OlmR0',
+    category: 'Piano',
+  },
 ];
 
 // Mini Player Component - moved outside to prevent re-animation

@@ -62,6 +62,10 @@ function App() {
     cancelAssignmentMode,
     assignWidgetToBox,
     deleteWidget,
+    startWidgetDrag,
+    endWidgetDrag,
+    handleWidgetDragEnterGrid,
+    handleWidgetDragLeaveGrid,
   } = useEditMode();
 
   // Dialog state
@@ -85,10 +89,37 @@ function App() {
   const [showRadioDialog, setShowRadioDialog] = useState(false);
   const [isMusicMinimized, setIsMusicMinimized] = useState(false);
 
+  // Mouse tracking for click vs drag detection
+  const [mouseDownPos, setMouseDownPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Derived state
   const bounds = getBounds(boxes);
   const gridWidth = (bounds.maxX - bounds.minX + 1) * (BOX_SIZE + GAP) - GAP;
   const gridHeight = (bounds.maxY - bounds.minY + 1) * (BOX_SIZE + GAP) - GAP;
+
+  // Handle widget assignment by drag
+  const handleAssignWidgetByDrag = (boxId: string, widgetType: string) => {
+    // Find the box and check if it doesn't already have a widget
+    const box = boxes.find((b) => b.id === boxId);
+    if (box && !box.widget) {
+      // Start assignment mode with the specific widget type
+      if (
+        widgetType === 'clock' ||
+        widgetType === 'pomodoro' ||
+        widgetType === 'notes' ||
+        widgetType === 'todo' ||
+        widgetType === 'music' ||
+        widgetType === 'radio'
+      ) {
+        startAssignmentMode(widgetType);
+        // Assign immediately without delay since assignment mode is now active
+        assignWidgetToBox(boxId);
+      }
+    }
+  };
 
   // ESC key to cancel assignment mode, Ctrl+Z/Y for undo/redo in edit mode
   useEffect(() => {
@@ -126,8 +157,8 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen bg-gray-900 flex flex-col relative ${
-        editMode ? 'border-4 border-white/80 edit-mode-border' : ''
+      className={`min-h-screen flex flex-col relative transition-all duration-300 ${
+        editMode ? 'border-12 bg-gray-800 edit-mode-border' : 'bg-gray-900'
       }`}
     >
       {/* Main Content Area */}
@@ -164,6 +195,9 @@ function App() {
           mergePreview={mergePreview}
           onAddBox={addBox}
           onAssignWidget={assignWidgetToBox}
+          onAssignWidgetByDrag={handleAssignWidgetByDrag}
+          onWidgetDragEnterGrid={handleWidgetDragEnterGrid}
+          onWidgetDragLeaveGrid={handleWidgetDragLeaveGrid}
           onClockWidgetClick={(boxId: string) => {
             if (!editMode) {
               setSelectedClockBoxId(boxId);
@@ -181,6 +215,7 @@ function App() {
           onMouseDown={(e, boxId) => {
             if (e.button === 0 && editMode) {
               e.preventDefault();
+              setMouseDownPos({ x: e.clientX, y: e.clientY });
               setDragStartBox(boxId);
               setDragOverBox(null);
               setIsDragging(false);
@@ -210,18 +245,41 @@ function App() {
           }}
           onMouseUp={(e) => {
             e.preventDefault();
-            if (
-              isDragging &&
-              dragStartBox &&
-              dragOverBox &&
-              dragStartBox !== dragOverBox &&
-              editMode
-            ) {
-              mergeBoxes(dragStartBox, dragOverBox);
+            e.stopPropagation();
+
+            // Check if this was a click (no significant mouse movement) vs drag
+            if (mouseDownPos && editMode && dragStartBox) {
+              const mouseMovement =
+                Math.abs(e.clientX - mouseDownPos.x) +
+                Math.abs(e.clientY - mouseDownPos.y);
+              const isClick = mouseMovement < 5; // Less than 5px movement = click
+
+              if (isClick) {
+                // This was a click, show context menu with slight delay
+                setTimeout(() => {
+                  setContextMenu({
+                    visible: true,
+                    x: e.clientX,
+                    y: e.clientY,
+                    boxId: dragStartBox,
+                  });
+                }, 50);
+              } else if (
+                isDragging &&
+                dragStartBox &&
+                dragOverBox &&
+                dragStartBox !== dragOverBox
+              ) {
+                // This was a drag, merge boxes
+                mergeBoxes(dragStartBox, dragOverBox);
+              }
             }
+
+            // Reset states
             setIsDragging(false);
             setDragStartBox(null);
             setDragOverBox(null);
+            setMouseDownPos(null);
           }}
           onGhostBoxDrop={(ghostX, ghostY) => {
             if (dragStartBox && editMode) {
@@ -298,6 +356,8 @@ function App() {
       {/* Bottom Dock */}
       <BottomDock
         editMode={editMode}
+        onWidgetDragStart={startWidgetDrag}
+        onWidgetDragEnd={endWidgetDrag}
         onClockClick={() => {
           if (!editMode) {
             setClockDialogMode('assign');

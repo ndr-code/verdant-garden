@@ -64,6 +64,10 @@ export const useEditMode = () => {
     active: false,
     widgetType: null,
   });
+  const [isDraggingWidget, setIsDraggingWidget] = useState(false);
+  const [draggedWidgetType, setDraggedWidgetType] = useState<string | null>(
+    null
+  );
   const [mergePreview, setMergePreview] = useState<{
     visible: boolean;
     x: number;
@@ -314,10 +318,18 @@ export const useEditMode = () => {
       }
     };
 
-    const handleGlobalClick = () => {
-      setContextMenu({ visible: false, x: 0, y: 0, boxId: '' });
-      setColorPicker({ visible: false, x: 0, y: 0, boxId: '' });
-      clearMergePreview();
+    const handleGlobalClick = (e: MouseEvent) => {
+      // Small delay to avoid immediate closure of context menu that was just opened
+      setTimeout(() => {
+        const target = e.target as Element;
+        const isContextMenuClick = target?.closest('[data-context-menu]');
+
+        if (!isContextMenuClick) {
+          setContextMenu({ visible: false, x: 0, y: 0, boxId: '' });
+          setColorPicker({ visible: false, x: 0, y: 0, boxId: '' });
+          clearMergePreview();
+        }
+      }, 10);
     };
 
     document.addEventListener('mouseup', handleGlobalMouseUp);
@@ -480,10 +492,13 @@ export const useEditMode = () => {
 
     boxes.forEach((box) => {
       if (box.width === 1 && box.height === 1) {
-        // Box is already individual, keep as is
-        allIndividualBoxes.push({ ...box });
+        // Box is already individual, keep as is but remove widget
+        allIndividualBoxes.push({
+          ...box,
+          widget: undefined,
+        });
       } else {
-        // Break down merged box into individual boxes
+        // Break down merged box into individual boxes without widgets
         for (let i = 0; i < box.width; i++) {
           for (let j = 0; j < box.height; j++) {
             allIndividualBoxes.push({
@@ -493,6 +508,8 @@ export const useEditMode = () => {
               width: 1,
               height: 1,
               color: box.color,
+              // Explicitly set widget to undefined to remove all widgets
+              widget: undefined,
             });
           }
         }
@@ -860,6 +877,44 @@ export const useEditMode = () => {
     [boxes, saveToHistory]
   );
 
+  // Widget drag handlers
+  const startWidgetDrag = useCallback((widgetType: string) => {
+    setIsDraggingWidget(true);
+    setDraggedWidgetType(widgetType);
+  }, []);
+
+  const endWidgetDrag = useCallback(() => {
+    setIsDraggingWidget(false);
+    setDraggedWidgetType(null);
+    // Cancel assignment mode if it was activated during drag
+    if (assignmentMode.active) {
+      setAssignmentMode({ active: false, widgetType: null });
+    }
+  }, [assignmentMode.active]);
+
+  const handleWidgetDragEnterGrid = useCallback(() => {
+    if (isDraggingWidget && draggedWidgetType && !editMode) {
+      // Auto-activate assignment mode when widget is dragged over grid
+      if (
+        draggedWidgetType === 'clock' ||
+        draggedWidgetType === 'pomodoro' ||
+        draggedWidgetType === 'notes' ||
+        draggedWidgetType === 'todo' ||
+        draggedWidgetType === 'music' ||
+        draggedWidgetType === 'radio'
+      ) {
+        setAssignmentMode({ active: true, widgetType: draggedWidgetType });
+      }
+    }
+  }, [isDraggingWidget, draggedWidgetType, editMode]);
+
+  const handleWidgetDragLeaveGrid = useCallback(() => {
+    // Deactivate assignment mode when widget leaves grid area
+    if (assignmentMode.active && isDraggingWidget) {
+      setAssignmentMode({ active: false, widgetType: null });
+    }
+  }, [assignmentMode.active, isDraggingWidget]);
+
   return {
     // State
     boxes,
@@ -876,6 +931,8 @@ export const useEditMode = () => {
     assignmentMode,
     mergePreview,
     dragArea,
+    isDraggingWidget,
+    draggedWidgetType,
 
     // Actions
     toggleEditMode,
@@ -913,5 +970,11 @@ export const useEditMode = () => {
     cancelAssignmentMode,
     assignWidgetToBox,
     deleteWidget,
+
+    // Widget drag handlers
+    startWidgetDrag,
+    endWidgetDrag,
+    handleWidgetDragEnterGrid,
+    handleWidgetDragLeaveGrid,
   };
 };
