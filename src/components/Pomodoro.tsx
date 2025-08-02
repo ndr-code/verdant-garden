@@ -3,14 +3,24 @@ import { motion } from 'framer-motion';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 
 interface PomodoroProps {
-  size?: 'small' | 'medium' | 'large';
+  size?:
+    | 'tiny'
+    | 'narrow'
+    | 'wide'
+    | 'small'
+    | 'medium-wide'
+    | 'medium-tall'
+    | 'large'
+    | 'xlarge';
   className?: string;
   workDuration?: number;
   breakDuration?: number;
+  width?: number;
+  height?: number;
 }
 
 export const Pomodoro = ({
-  size = 'medium',
+  size = 'small',
   className = '',
   workDuration = 25,
   breakDuration = 5,
@@ -64,6 +74,30 @@ export const Pomodoro = ({
 
   const getSizeClasses = () => {
     switch (size) {
+      case 'tiny':
+        return {
+          timeClass: 'text-xs font-mono font-bold',
+          sessionClass: 'text-xs',
+          buttonClass: 'w-4 h-4',
+          iconSize: 10,
+          gap: 'gap-1',
+        };
+      case 'narrow':
+        return {
+          timeClass: 'text-sm font-mono font-bold',
+          sessionClass: 'text-xs',
+          buttonClass: 'w-5 h-5',
+          iconSize: 12,
+          gap: 'gap-1',
+        };
+      case 'wide':
+        return {
+          timeClass: 'text-sm font-mono font-bold',
+          sessionClass: 'text-xs',
+          buttonClass: 'w-5 h-5',
+          iconSize: 12,
+          gap: 'gap-1',
+        };
       case 'small':
         return {
           timeClass: 'text-lg font-mono font-bold',
@@ -72,9 +106,17 @@ export const Pomodoro = ({
           iconSize: 12,
           gap: 'gap-1',
         };
-      case 'medium':
+      case 'medium-wide':
         return {
           timeClass: 'text-2xl font-mono font-bold',
+          sessionClass: 'text-sm',
+          buttonClass: 'w-8 h-8',
+          iconSize: 16,
+          gap: 'gap-2',
+        };
+      case 'medium-tall':
+        return {
+          timeClass: 'text-3xl font-mono font-bold',
           sessionClass: 'text-sm',
           buttonClass: 'w-8 h-8',
           iconSize: 16,
@@ -87,6 +129,14 @@ export const Pomodoro = ({
           buttonClass: 'w-12 h-12',
           iconSize: 20,
           gap: 'gap-4',
+        };
+      case 'xlarge':
+        return {
+          timeClass: 'text-8xl font-mono font-bold',
+          sessionClass: 'text-2xl',
+          buttonClass: 'w-16 h-16',
+          iconSize: 24,
+          gap: 'gap-6',
         };
       default:
         return {

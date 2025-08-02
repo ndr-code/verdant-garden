@@ -49,6 +49,23 @@ input[type='range']:focus::-moz-range-thumb {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
+/* Muted volume slider styling */
+input[type='range'].muted::-webkit-slider-thumb {
+  background: #b91c1c;
+}
+
+input[type='range'].muted::-moz-range-thumb {
+  background: #b91c1c;
+}
+
+input[type='range'].muted:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.3);
+}
+
+input[type='range'].muted:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.3);
+}
+
 /* Assignment mode animation */
 @keyframes dash {
   from {
@@ -59,15 +76,37 @@ input[type='range']:focus::-moz-range-thumb {
   }
 }
 
-@keyframes moveStripes {
-  from {
-    background-position: 0 0;
+/* Edit mode blinking border animation */
+@keyframes editModeBlink {
+  0% {
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1);
   }
-  to {
-    background-position: 60px -60px;
+  50% {
+    border-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
   }
+  100% {
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
+.edit-mode-border {
+  animation: editModeBlink 1s ease-in-out infinite;
 }
 
 .animate-dash {
   animation: dash 1.5s linear infinite;
+}
+
+/* Custom text sizes smaller than xs */
+.text-2xs {
+  font-size: 0.625rem; /* 10px */
+  line-height: 0.75rem; /* 12px */
+}
+
+.text-3xs {
+  font-size: 0.5rem; /* 8px */
+  line-height: 0.625rem; /* 10px */
 }

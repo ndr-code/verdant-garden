@@ -73,7 +73,7 @@ export const ClockDialog = ({
 
                 {mode === 'assign' ? (
                   <motion.button
-                    className='bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 cursor-pointer'
+                    className='bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer'
                     onClick={handleAssignToGrid}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -85,7 +85,7 @@ export const ClockDialog = ({
                   </motion.button>
                 ) : (
                   <motion.button
-                    className='bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 cursor-pointer'
+                    className='bg-red-500 hover:bg-red-600 text-white px-6 py-3 text-sm rounded-lg font-medium transition-colors duration-200 cursor-pointer'
                     onClick={handleRemoveWidget}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}

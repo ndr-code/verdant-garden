@@ -64,8 +64,217 @@ export const useEditMode = () => {
     active: false,
     widgetType: null,
   });
+  const [mergePreview, setMergePreview] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    boxIds: string[];
+  } | null>(null);
+  const [dragArea, setDragArea] = useState<{
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+    startBox: GridBox;
+  } | null>(null);
 
   // Effects
+  const clearMergePreview = useCallback(() => {
+    setMergePreview(null);
+  }, []);
+
+  const clearDragArea = useCallback(() => {
+    setDragArea(null);
+  }, []);
+
+  const calculateMergePreview = useCallback(
+    (sourceId: string, targetId: string) => {
+      const sourceBox = boxes.find((box) => box.id === sourceId);
+      const targetBox = boxes.find((box) => box.id === targetId);
+
+      if (!sourceBox || !targetBox) {
+        setMergePreview(null);
+        return;
+      }
+
+      // Check if boxes are adjacent for traditional merge
+      const areAdjacentBoxes = (() => {
+        const box1Positions = [];
+        for (let i = 0; i < sourceBox.width; i++) {
+          for (let j = 0; j < sourceBox.height; j++) {
+            box1Positions.push({ x: sourceBox.x + i, y: sourceBox.y + j });
+          }
+        }
+
+        const box2Positions = [];
+        for (let i = 0; i < targetBox.width; i++) {
+          for (let j = 0; j < targetBox.height; j++) {
+            box2Positions.push({ x: targetBox.x + i, y: targetBox.y + j });
+          }
+        }
+
+        for (const pos1 of box1Positions) {
+          for (const pos2 of box2Positions) {
+            const dx = Math.abs(pos1.x - pos2.x);
+            const dy = Math.abs(pos1.y - pos2.y);
+            if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      })();
+
+      if (areAdjacentBoxes) {
+        // Traditional adjacent merge calculation
+        let minX = Math.min(sourceBox.x, targetBox.x);
+        let maxX = Math.max(
+          sourceBox.x + sourceBox.width - 1,
+          targetBox.x + targetBox.width - 1
+        );
+        let minY = Math.min(sourceBox.y, targetBox.y);
+        let maxY = Math.max(
+          sourceBox.y + sourceBox.height - 1,
+          targetBox.y + targetBox.height - 1
+        );
+
+        const boxesToMerge = new Set([sourceId, targetId]);
+        let hasOverlaps = true;
+
+        while (hasOverlaps) {
+          hasOverlaps = false;
+          boxes.forEach((box) => {
+            if (!boxesToMerge.has(box.id)) {
+              const boxMinX = box.x;
+              const boxMaxX = box.x + box.width - 1;
+              const boxMinY = box.y;
+              const boxMaxY = box.y + box.height - 1;
+
+              const overlapsX = !(boxMaxX < minX || boxMinX > maxX);
+              const overlapsY = !(boxMaxY < minY || boxMinY > maxY);
+
+              if (overlapsX && overlapsY) {
+                boxesToMerge.add(box.id);
+                hasOverlaps = true;
+                minX = Math.min(minX, boxMinX);
+                maxX = Math.max(maxX, boxMaxX);
+                minY = Math.min(minY, boxMinY);
+                maxY = Math.max(maxY, boxMaxY);
+              }
+            }
+          });
+        }
+
+        const width = maxX - minX + 1;
+        const height = maxY - minY + 1;
+
+        if (width <= MAX_GRID_SIZE && height <= MAX_GRID_SIZE) {
+          setMergePreview({
+            visible: true,
+            x: minX,
+            y: minY,
+            width,
+            height,
+            boxIds: Array.from(boxesToMerge),
+          });
+        } else {
+          setMergePreview(null);
+        }
+      } else {
+        // Multi-box merge calculation
+        let minX = Math.min(sourceBox.x, targetBox.x);
+        let maxX = Math.max(
+          sourceBox.x + sourceBox.width - 1,
+          targetBox.x + targetBox.width - 1
+        );
+        let minY = Math.min(sourceBox.y, targetBox.y);
+        let maxY = Math.max(
+          sourceBox.y + sourceBox.height - 1,
+          targetBox.y + targetBox.height - 1
+        );
+
+        const boxesToMerge = new Set([sourceId, targetId]);
+
+        boxes.forEach((box) => {
+          if (!boxesToMerge.has(box.id)) {
+            const boxMinX = box.x;
+            const boxMaxX = box.x + box.width - 1;
+            const boxMinY = box.y;
+            const boxMaxY = box.y + box.height - 1;
+
+            const overlapsX = !(boxMaxX < minX || boxMinX > maxX);
+            const overlapsY = !(boxMaxY < minY || boxMinY > maxY);
+
+            if (overlapsX && overlapsY) {
+              boxesToMerge.add(box.id);
+              minX = Math.min(minX, boxMinX);
+              maxX = Math.max(maxX, boxMaxX);
+              minY = Math.min(minY, boxMinY);
+              maxY = Math.max(maxY, boxMaxY);
+            }
+          }
+        });
+
+        const mergeWidth = maxX - minX + 1;
+        const mergeHeight = maxY - minY + 1;
+        let canMerge = true;
+
+        // Check for gaps
+        for (let x = minX; x <= maxX; x++) {
+          for (let y = minY; y <= maxY; y++) {
+            let positionCovered = false;
+
+            for (const boxId of boxesToMerge) {
+              const box = boxes.find((b) => b.id === boxId);
+              if (box) {
+                const boxMinX = box.x;
+                const boxMaxX = box.x + box.width - 1;
+                const boxMinY = box.y;
+                const boxMaxY = box.y + box.height - 1;
+
+                if (
+                  x >= boxMinX &&
+                  x <= boxMaxX &&
+                  y >= boxMinY &&
+                  y <= boxMaxY
+                ) {
+                  positionCovered = true;
+                  break;
+                }
+              }
+            }
+
+            if (!positionCovered) {
+              canMerge = false;
+              break;
+            }
+          }
+          if (!canMerge) break;
+        }
+
+        if (
+          canMerge &&
+          mergeWidth <= MAX_GRID_SIZE &&
+          mergeHeight <= MAX_GRID_SIZE
+        ) {
+          setMergePreview({
+            visible: true,
+            x: minX,
+            y: minY,
+            width: mergeWidth,
+            height: mergeHeight,
+            boxIds: Array.from(boxesToMerge),
+          });
+        } else {
+          setMergePreview(null);
+        }
+      }
+    },
+    [boxes]
+  );
+
   useEffect(() => {
     try {
       localStorage.setItem('gridBoxes', JSON.stringify(boxes));
@@ -87,6 +296,7 @@ export const useEditMode = () => {
         setIsDragging(false);
         setDragStartBox(null);
         setDragOverBox(null);
+        clearMergePreview();
       }
     };
 
@@ -100,12 +310,14 @@ export const useEditMode = () => {
         !(e.target as Element).closest('[data-box-id]')
       ) {
         setDragOverBox(null);
+        clearMergePreview();
       }
     };
 
     const handleGlobalClick = () => {
       setContextMenu({ visible: false, x: 0, y: 0, boxId: '' });
       setColorPicker({ visible: false, x: 0, y: 0, boxId: '' });
+      clearMergePreview();
     };
 
     document.addEventListener('mouseup', handleGlobalMouseUp);
@@ -117,7 +329,26 @@ export const useEditMode = () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('click', handleGlobalClick);
     };
-  }, [isDragging, dragStartBox]);
+  }, [isDragging, dragStartBox, clearMergePreview]);
+
+  useEffect(() => {
+    if (
+      isDragging &&
+      dragStartBox &&
+      dragOverBox &&
+      dragStartBox !== dragOverBox
+    ) {
+      calculateMergePreview(dragStartBox, dragOverBox);
+    } else if (!isDragging) {
+      clearMergePreview();
+    }
+  }, [
+    isDragging,
+    dragStartBox,
+    dragOverBox,
+    calculateMergePreview,
+    clearMergePreview,
+  ]);
 
   // Actions
   const saveToHistory = useCallback(
@@ -244,6 +475,34 @@ export const useEditMode = () => {
     [boxes, saveToHistory]
   );
 
+  const explodeAllBoxes = useCallback(() => {
+    const allIndividualBoxes: GridBox[] = [];
+
+    boxes.forEach((box) => {
+      if (box.width === 1 && box.height === 1) {
+        // Box is already individual, keep as is
+        allIndividualBoxes.push({ ...box });
+      } else {
+        // Break down merged box into individual boxes
+        for (let i = 0; i < box.width; i++) {
+          for (let j = 0; j < box.height; j++) {
+            allIndividualBoxes.push({
+              id: `${Date.now()}-${box.id}-${i}-${j}`,
+              x: box.x + i,
+              y: box.y + j,
+              width: 1,
+              height: 1,
+              color: box.color,
+            });
+          }
+        }
+      }
+    });
+
+    setBoxes(allIndividualBoxes);
+    saveToHistory(allIndividualBoxes);
+  }, [boxes, saveToHistory]);
+
   const changeBoxColor = useCallback(
     (boxId: string, newColor: string) => {
       const newBoxes = boxes.map((box) =>
@@ -369,36 +628,100 @@ export const useEditMode = () => {
       const sourceBox = boxes.find((box) => box.id === sourceId);
       const targetBox = boxes.find((box) => box.id === targetId);
 
-      if (sourceBox && targetBox && areAdjacent(sourceBox, targetBox)) {
-        let minX = Math.min(sourceBox.x, targetBox.x);
-        let maxX = Math.max(
-          sourceBox.x + sourceBox.width - 1,
-          targetBox.x + targetBox.width - 1
-        );
-        let minY = Math.min(sourceBox.y, targetBox.y);
-        let maxY = Math.max(
-          sourceBox.y + sourceBox.height - 1,
-          targetBox.y + targetBox.height - 1
-        );
+      if (sourceBox && targetBox) {
+        // Check if boxes are adjacent for traditional merge
+        if (areAdjacent(sourceBox, targetBox)) {
+          // Traditional adjacent merge - expand to include overlapping boxes
+          let minX = Math.min(sourceBox.x, targetBox.x);
+          let maxX = Math.max(
+            sourceBox.x + sourceBox.width - 1,
+            targetBox.x + targetBox.width - 1
+          );
+          let minY = Math.min(sourceBox.y, targetBox.y);
+          let maxY = Math.max(
+            sourceBox.y + sourceBox.height - 1,
+            targetBox.y + targetBox.height - 1
+          );
 
-        const boxesToRemove = new Set([sourceId, targetId]);
-        let hasOverlaps = true;
+          const boxesToRemove = new Set([sourceId, targetId]);
+          let hasOverlaps = true;
 
-        while (hasOverlaps) {
-          hasOverlaps = false;
+          while (hasOverlaps) {
+            hasOverlaps = false;
+            boxes.forEach((box) => {
+              if (!boxesToRemove.has(box.id)) {
+                const boxMinX = box.x;
+                const boxMaxX = box.x + box.width - 1;
+                const boxMinY = box.y;
+                const boxMaxY = box.y + box.height - 1;
+
+                const overlapsX = !(boxMaxX < minX || boxMinX > maxX);
+                const overlapsY = !(boxMaxY < minY || boxMinY > maxY);
+
+                if (overlapsX && overlapsY) {
+                  boxesToRemove.add(box.id);
+                  hasOverlaps = true;
+                  minX = Math.min(minX, boxMinX);
+                  maxX = Math.max(maxX, boxMaxX);
+                  minY = Math.min(minY, boxMinY);
+                  maxY = Math.max(maxY, boxMaxY);
+                }
+              }
+            });
+          }
+
+          const mergedBox: GridBox = {
+            id: Date.now().toString(),
+            x: minX,
+            y: minY,
+            width: maxX - minX + 1,
+            height: maxY - minY + 1,
+            color: sourceBox.color,
+            widget: sourceBox.widget || targetBox.widget,
+          };
+
+          // Check if merged box would exceed 7x7 grid
+          const gridWidth = maxX - minX + 1;
+          const gridHeight = maxY - minY + 1;
+
+          if (gridWidth <= MAX_GRID_SIZE && gridHeight <= MAX_GRID_SIZE) {
+            const newBoxes = boxes
+              .filter((box) => !boxesToRemove.has(box.id))
+              .concat(mergedBox);
+            setBoxes(newBoxes);
+            saveToHistory(newBoxes);
+          }
+        } else {
+          // Multi-box merge for non-adjacent boxes
+          // Calculate the bounding box that would contain both source and target
+          let minX = Math.min(sourceBox.x, targetBox.x);
+          let maxX = Math.max(
+            sourceBox.x + sourceBox.width - 1,
+            targetBox.x + targetBox.width - 1
+          );
+          let minY = Math.min(sourceBox.y, targetBox.y);
+          let maxY = Math.max(
+            sourceBox.y + sourceBox.height - 1,
+            targetBox.y + targetBox.height - 1
+          );
+
+          // Find all boxes that would be included in this rectangular area
+          const boxesToMerge = new Set([sourceId, targetId]);
+
           boxes.forEach((box) => {
-            if (!boxesToRemove.has(box.id)) {
+            if (!boxesToMerge.has(box.id)) {
               const boxMinX = box.x;
               const boxMaxX = box.x + box.width - 1;
               const boxMinY = box.y;
               const boxMaxY = box.y + box.height - 1;
 
+              // Check if this box overlaps with or is contained within the merge area
               const overlapsX = !(boxMaxX < minX || boxMinX > maxX);
               const overlapsY = !(boxMaxY < minY || boxMinY > maxY);
 
               if (overlapsX && overlapsY) {
-                boxesToRemove.add(box.id);
-                hasOverlaps = true;
+                boxesToMerge.add(box.id);
+                // Expand the bounding box to include this box
                 minX = Math.min(minX, boxMinX);
                 maxX = Math.max(maxX, boxMaxX);
                 minY = Math.min(minY, boxMinY);
@@ -406,28 +729,69 @@ export const useEditMode = () => {
               }
             }
           });
+
+          // Check if there are any gaps in the rectangular area that would be created
+          const mergeWidth = maxX - minX + 1;
+          const mergeHeight = maxY - minY + 1;
+          let canMerge = true;
+
+          // Check if the merge area forms a valid rectangle (no gaps)
+          for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+              let positionCovered = false;
+
+              for (const boxId of boxesToMerge) {
+                const box = boxes.find((b) => b.id === boxId);
+                if (box) {
+                  const boxMinX = box.x;
+                  const boxMaxX = box.x + box.width - 1;
+                  const boxMinY = box.y;
+                  const boxMaxY = box.y + box.height - 1;
+
+                  if (
+                    x >= boxMinX &&
+                    x <= boxMaxX &&
+                    y >= boxMinY &&
+                    y <= boxMaxY
+                  ) {
+                    positionCovered = true;
+                    break;
+                  }
+                }
+              }
+
+              if (!positionCovered) {
+                canMerge = false;
+                break;
+              }
+            }
+            if (!canMerge) break;
+          }
+
+          // Check if merged box would exceed 7x7 grid limits
+          if (mergeWidth > MAX_GRID_SIZE || mergeHeight > MAX_GRID_SIZE) {
+            canMerge = false;
+          }
+
+          if (canMerge) {
+            const mergedBox: GridBox = {
+              id: Date.now().toString(),
+              x: minX,
+              y: minY,
+              width: mergeWidth,
+              height: mergeHeight,
+              color: sourceBox.color,
+              widget: sourceBox.widget || targetBox.widget,
+            };
+
+            const newBoxes = boxes
+              .filter((box) => !boxesToMerge.has(box.id))
+              .concat(mergedBox);
+            setBoxes(newBoxes);
+            saveToHistory(newBoxes);
+          }
         }
 
-        const mergedBox: GridBox = {
-          id: Date.now().toString(),
-          x: minX,
-          y: minY,
-          width: maxX - minX + 1,
-          height: maxY - minY + 1,
-          color: sourceBox.color,
-        };
-
-        // Check if merged box would exceed 7x7 grid
-        const gridWidth = maxX - minX + 1;
-        const gridHeight = maxY - minY + 1;
-
-        if (gridWidth <= MAX_GRID_SIZE && gridHeight <= MAX_GRID_SIZE) {
-          const newBoxes = boxes
-            .filter((box) => !boxesToRemove.has(box.id))
-            .concat(mergedBox);
-          setBoxes(newBoxes);
-          saveToHistory(newBoxes);
-        }
         setIsDragging(false);
         setDragStartBox(null);
         setDragOverBox(null);
@@ -510,6 +874,8 @@ export const useEditMode = () => {
     contextMenu,
     colorPicker,
     assignmentMode,
+    mergePreview,
+    dragArea,
 
     // Actions
     toggleEditMode,
@@ -520,11 +886,15 @@ export const useEditMode = () => {
     addBox,
     deleteBox,
     unmergeBox,
+    explodeAllBoxes,
     changeBoxColor,
     mergeBoxes,
 
     // Utilities
     getGhostPositions,
+    calculateMergePreview,
+    clearMergePreview,
+    clearDragArea,
 
     // Event handlers
     handleColorHover,

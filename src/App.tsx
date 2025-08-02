@@ -37,6 +37,7 @@ function App() {
     contextMenu,
     colorPicker,
     assignmentMode,
+    mergePreview,
     toggleEditMode,
     undo,
     redo,
@@ -45,6 +46,7 @@ function App() {
     addBox,
     deleteBox,
     unmergeBox,
+    explodeAllBoxes,
     changeBoxColor,
     mergeBoxes,
     getGhostPositions,
@@ -88,22 +90,44 @@ function App() {
   const gridWidth = (bounds.maxX - bounds.minX + 1) * (BOX_SIZE + GAP) - GAP;
   const gridHeight = (bounds.maxY - bounds.minY + 1) * (BOX_SIZE + GAP) - GAP;
 
-  // ESC key to cancel assignment mode
+  // ESC key to cancel assignment mode, Ctrl+Z/Y for undo/redo in edit mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && assignmentMode.active) {
         cancelAssignmentMode();
       }
+
+      // Undo/Redo shortcuts in edit mode
+      if (editMode && (e.ctrlKey || e.metaKey)) {
+        if (e.key === 'z' && !e.shiftKey && historyIndex > 0) {
+          e.preventDefault();
+          undo();
+        } else if (
+          (e.key === 'y' || (e.key === 'z' && e.shiftKey)) &&
+          historyIndex < history.length - 1
+        ) {
+          e.preventDefault();
+          redo();
+        }
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [assignmentMode.active, cancelAssignmentMode]);
+  }, [
+    assignmentMode.active,
+    editMode,
+    historyIndex,
+    history.length,
+    cancelAssignmentMode,
+    undo,
+    redo,
+  ]);
 
   return (
     <div
       className={`min-h-screen bg-gray-900 flex flex-col relative ${
-        editMode ? 'border-4 border-white/80' : ''
+        editMode ? 'border-4 border-white/80 edit-mode-border' : ''
       }`}
     >
       {/* Main Content Area */}
@@ -114,6 +138,7 @@ function App() {
           onUndo={undo}
           onRedo={redo}
           onReset={resetGrid}
+          onExplode={explodeAllBoxes}
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
         />
@@ -136,17 +161,22 @@ function App() {
           gridHeight={gridHeight}
           ghostPositions={getGhostPositions()}
           assignmentMode={assignmentMode}
+          mergePreview={mergePreview}
           onAddBox={addBox}
           onAssignWidget={assignWidgetToBox}
           onClockWidgetClick={(boxId: string) => {
-            setSelectedClockBoxId(boxId);
-            setClockDialogMode('view');
-            setShowClockDialog(true);
+            if (!editMode) {
+              setSelectedClockBoxId(boxId);
+              setClockDialogMode('view');
+              setShowClockDialog(true);
+            }
           }}
           onPomodoroWidgetClick={(boxId: string) => {
-            setSelectedPomodoroBoxId(boxId);
-            setPomodoroDialogMode('view');
-            setShowPomodoroDialog(true);
+            if (!editMode) {
+              setSelectedPomodoroBoxId(boxId);
+              setPomodoroDialogMode('view');
+              setShowPomodoroDialog(true);
+            }
           }}
           onMouseDown={(e, boxId) => {
             if (e.button === 0 && editMode) {
@@ -192,6 +222,15 @@ function App() {
             setIsDragging(false);
             setDragStartBox(null);
             setDragOverBox(null);
+          }}
+          onGhostBoxDrop={(ghostX, ghostY) => {
+            if (dragStartBox && editMode) {
+              // Simple approach: just add a box at ghost position
+              addBox(ghostX, ghostY);
+              setIsDragging(false);
+              setDragStartBox(null);
+              setDragOverBox(null);
+            }
           }}
         />
 
@@ -252,32 +291,52 @@ function App() {
           onOpenChange={setShowMusicDialog}
           isMinimized={isMusicMinimized}
           onMinimize={setIsMusicMinimized}
+          editMode={editMode}
         />
       </div>
 
       {/* Bottom Dock */}
       <BottomDock
+        editMode={editMode}
         onClockClick={() => {
-          setClockDialogMode('assign');
-          setSelectedClockBoxId(null);
-          setShowClockDialog(true);
-        }}
-        onTimerClick={() => {
-          setPomodoroDialogMode('assign');
-          setSelectedPomodoroBoxId(null);
-          setShowPomodoroDialog(true);
-        }}
-        onNotesClick={() => setShowNotesDialog(true)}
-        onTodoClick={() => setShowTodoDialog(true)}
-        onMusicClick={() => {
-          if (isMusicMinimized) {
-            setIsMusicMinimized(false);
-            setShowMusicDialog(true);
-          } else {
-            setShowMusicDialog(true);
+          if (!editMode) {
+            setClockDialogMode('assign');
+            setSelectedClockBoxId(null);
+            setShowClockDialog(true);
           }
         }}
-        onRadioClick={() => setShowRadioDialog(true)}
+        onTimerClick={() => {
+          if (!editMode) {
+            setPomodoroDialogMode('assign');
+            setSelectedPomodoroBoxId(null);
+            setShowPomodoroDialog(true);
+          }
+        }}
+        onNotesClick={() => {
+          if (!editMode) {
+            setShowNotesDialog(true);
+          }
+        }}
+        onTodoClick={() => {
+          if (!editMode) {
+            setShowTodoDialog(true);
+          }
+        }}
+        onMusicClick={() => {
+          if (!editMode) {
+            if (isMusicMinimized) {
+              setIsMusicMinimized(false);
+              setShowMusicDialog(true);
+            } else {
+              setShowMusicDialog(true);
+            }
+          }
+        }}
+        onRadioClick={() => {
+          if (!editMode) {
+            setShowRadioDialog(true);
+          }
+        }}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { Undo2, Redo2, RotateCcw, Edit3 } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Edit3, Loader } from 'lucide-react';
 
 interface ControlButtonsProps {
   editMode: boolean;
@@ -6,6 +6,7 @@ interface ControlButtonsProps {
   onUndo: () => void;
   onRedo: () => void;
   onReset: () => void;
+  onExplode: () => void;
   canUndo: boolean;
   canRedo: boolean;
 }
@@ -16,6 +17,7 @@ export const ControlButtons = ({
   onUndo,
   onRedo,
   onReset,
+  onExplode,
   canUndo,
   canRedo,
 }: ControlButtonsProps) => (
@@ -24,10 +26,11 @@ export const ControlButtons = ({
       <button
         onClick={onUndo}
         disabled={!canUndo}
+        title={canUndo ? 'Undo (Ctrl+Z)' : 'No actions to undo'}
         className={`w-12 h-12 cursor-pointer rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0 ${
           !canUndo
-            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700 text-white'
+            ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+            : 'bg-gray-600 hover:bg-gray-700 text-white'
         }`}
       >
         <Undo2 size={20} />
@@ -37,10 +40,11 @@ export const ControlButtons = ({
       <button
         onClick={onRedo}
         disabled={!canRedo}
+        title={canRedo ? 'Redo (Ctrl+Y)' : 'No actions to redo'}
         className={`w-12 h-12 cursor-pointer rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0 ${
           !canRedo
-            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700 text-white'
+            ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+            : 'bg-gray-600 hover:bg-gray-700 text-white'
         }`}
       >
         <Redo2 size={20} />
@@ -48,17 +52,28 @@ export const ControlButtons = ({
     )}
     {editMode && (
       <button
+        onClick={onExplode}
+        className='w-12 h-12 cursor-pointer bg-gray-500 hover:bg-red-800 text-white rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0'
+        title='Explode (Unmerge all boxes)'
+      >
+        <Loader size={20} />
+      </button>
+    )}
+    {editMode && (
+      <button
         onClick={onReset}
-        className='w-12 h-12 cursor-pointer bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0'
+        title='Reset Grid'
+        className='w-12 h-12 cursor-pointer bg-gray-500 hover:bg-red-800 text-white rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0'
       >
         <RotateCcw size={20} />
       </button>
     )}
     <button
       onClick={onToggleEdit}
+      title={editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
       className={`w-12 h-12 cursor-pointer rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0 ${
         editMode
-          ? 'bg-green-600 hover:bg-green-700 text-white'
+          ? 'bg-gray-700 hover:bg-gray-800 text-white'
           : 'bg-gray-600 hover:bg-gray-700 text-white'
       }`}
     >

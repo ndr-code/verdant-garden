@@ -25,6 +25,7 @@ interface MusicDialogProps {
   onOpenChange: (open: boolean) => void;
   isMinimized: boolean;
   onMinimize: (minimized: boolean) => void;
+  editMode?: boolean;
 }
 
 const ambienceTracks: AmbienceTrack[] = [
@@ -49,6 +50,13 @@ const ambienceTracks: AmbienceTrack[] = [
     youtubeId: 'xyCQFLOSWGc',
     category: 'Clock',
   },
+  {
+    id: '4',
+    title: 'Calm Piano Music and Rain',
+    description: 'Calm piano music with rain sounds for relaxation',
+    youtubeId: 'TXzlmOqwsE8',
+    category: 'Piano',
+  },
 ];
 
 // Mini Player Component - moved outside to prevent re-animation
@@ -63,6 +71,7 @@ const MiniPlayer = ({
   onMaximize,
   onStop,
   onNext,
+  editMode = false,
 }: {
   selectedTrack: AmbienceTrack;
   isPlaying: boolean;
@@ -74,56 +83,94 @@ const MiniPlayer = ({
   onMaximize: () => void;
   onStop: () => void;
   onNext: () => void;
+  editMode?: boolean;
 }) => (
   <motion.div
-    className='fixed bottom-20 right-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-4 w-80 z-[102]'
+    className={`fixed bottom-20 right-4 backdrop-blur-sm rounded-lg shadow-xl p-4 w-80 z-[102] ${
+      editMode ? 'bg-white/10' : 'bg-white/95'
+    }`}
     initial={{ opacity: 0, y: 50, scale: 0.8 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
     exit={{ opacity: 0, y: 50, scale: 0.8 }}
     transition={{ duration: 0.3 }}
   >
     <div className='flex items-center gap-3 mb-2'>
-      <div className='flex-1'>
-        <h4 className='font-semibold text-gray-800 text-sm truncate'>
+      <div className='flex-1 min-w-0'>
+        <h4
+          className={`font-semibold text-sm truncate ${
+            editMode ? 'text-white' : 'text-gray-800'
+          }`}
+        >
           {selectedTrack?.title}
         </h4>
-        <p className='text-xs text-gray-600 truncate'>
+        <p
+          className={`text-xs truncate ${
+            editMode ? 'text-gray-300' : 'text-gray-600'
+          }`}
+        >
           {selectedTrack?.category}
         </p>
       </div>
-      <div className='flex items-center gap-1'>
+      <div className='flex items-center gap-1 flex-shrink-0'>
         <button
-          onClick={onTogglePlay}
-          className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-            isPlaying
-              ? 'bg-red-500 hover:bg-red-600 text-white'
-              : 'bg-green-500 hover:bg-green-600 text-white'
+          onClick={editMode ? undefined : onTogglePlay}
+          disabled={editMode}
+          className={`p-1.5 rounded-full transition-colors ${
+            editMode
+              ? 'opacity-50 cursor-not-allowed bg-gray-400 text-gray-900'
+              : `cursor-pointer ${
+                  isPlaying
+                    ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                    : 'bg-gray-400 hover:bg-blue-600 text-white'
+                }`
           }`}
         >
           {isPlaying ? <Pause size={14} /> : <Play size={14} />}
         </button>
         <button
-          onClick={onNext}
-          className='p-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors cursor-pointer'
-          title='Next Track'
+          onClick={editMode ? undefined : onNext}
+          disabled={editMode}
+          className={`p-1.5 rounded-full transition-colors ${
+            editMode
+              ? 'opacity-50 cursor-not-allowed bg-gray-400 text-gray-900'
+              : 'bg-gray-400 hover:bg-blue-600 text-white cursor-pointer'
+          }`}
+          title={editMode ? 'Disabled in Edit Mode' : 'Next Track'}
         >
           <SkipForward size={14} />
         </button>
         <button
-          onClick={onToggleMute}
-          className='p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
+          onClick={editMode ? undefined : onToggleMute}
+          disabled={editMode}
+          className={`p-1.5 rounded-full transition-colors ${
+            editMode
+              ? 'opacity-50 cursor-not-allowed bg-gray-400 text-gray-900'
+              : isMuted
+              ? 'bg-red-700 hover:bg-blue-600 text-white cursor-pointer'
+              : 'bg-gray-400 hover:bg-blue-600 text-white cursor-pointer'
+          }`}
         >
           {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
         <button
-          onClick={onMaximize}
-          className='p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors cursor-pointer'
+          onClick={editMode ? undefined : onMaximize}
+          disabled={editMode}
+          className={`p-1.5 rounded-full transition-colors ${
+            editMode
+              ? 'opacity-50 cursor-not-allowed bg-gray-400 text-gray-900'
+              : 'bg-gray-400 hover:bg-blue-600 text-white cursor-pointer'
+          }`}
         >
           <Maximize2 size={14} />
         </button>
         <button
-          onClick={onStop}
-          className='p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
+          onClick={editMode ? undefined : onStop}
+          disabled={editMode}
+          className={`p-1.5 rounded-full transition-colors ${
+            editMode
+              ? 'opacity-50 cursor-not-allowed bg-gray-400 text-gray-900'
+              : 'bg-gray-400 hover:bg-blue-600 text-white cursor-pointer'
+          }`}
         >
           <Cross2Icon className='w-3.5 h-3.5' />
         </button>
@@ -132,19 +179,37 @@ const MiniPlayer = ({
 
     {/* Volume Slider */}
     <div className='flex items-center gap-2'>
-      <Volume2 size={12} className='text-gray-500' />
+      <Volume2
+        size={12}
+        className={editMode ? 'text-gray-300' : 'text-gray-500'}
+      />
       <input
         type='range'
         min='0'
         max='100'
         value={volume}
-        onChange={(e) => onVolumeChange(Number(e.target.value))}
-        className='flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
+        onChange={
+          editMode ? undefined : (e) => onVolumeChange(Number(e.target.value))
+        }
+        disabled={editMode}
+        className={`flex-1 h-1 bg-gray-200 rounded-lg appearance-none slider ${
+          editMode ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        } ${isMuted ? 'muted' : ''}`}
         style={{
-          background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume}%, #e5e7eb ${volume}%, #e5e7eb 100%)`,
+          background: `linear-gradient(to right, ${
+            isMuted ? '#b91c1c' : '#3b82f6'
+          } 0%, ${
+            isMuted ? '#b91c1c' : '#3b82f6'
+          } ${volume}%, #e5e7eb ${volume}%, #e5e7eb 100%)`,
         }}
       />
-      <span className='text-xs text-gray-500 w-8 text-right'>{volume}</span>
+      <span
+        className={`text-xs w-8 text-right ${
+          editMode ? 'text-gray-300' : 'text-gray-500'
+        }`}
+      >
+        {volume}
+      </span>
     </div>
   </motion.div>
 );
@@ -154,6 +219,7 @@ export const MusicDialog = ({
   onOpenChange,
   isMinimized,
   onMinimize,
+  editMode = false,
 }: MusicDialogProps) => {
   const [selectedTrack, setSelectedTrack] = useState<AmbienceTrack | null>(
     () => {
@@ -252,7 +318,23 @@ export const MusicDialog = ({
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+
+    // If unmuting, set volume after a short delay to avoid conflicts
+    if (!newMutedState) {
+      setTimeout(() => {
+        const iframe = document.querySelector(
+          '#youtube-player'
+        ) as HTMLIFrameElement;
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(
+            `{"event":"command","func":"setVolume","args":[${volume}]}`,
+            'https://www.youtube.com'
+          );
+        }
+      }, 150);
+    }
   };
 
   const handleVolumeChange = (newVolume: number) => {
@@ -365,6 +447,7 @@ export const MusicDialog = ({
             onMaximize={handleMaximize}
             onStop={stopTrack}
             onNext={nextTrack}
+            editMode={editMode}
           />
         )}
       </AnimatePresence>
@@ -422,8 +505,8 @@ export const MusicDialog = ({
                               onClick={togglePlay}
                               className={`p-2 rounded-full transition-colors cursor-pointer ${
                                 isPlaying
-                                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                                  : 'bg-green-500 hover:bg-green-600 text-white'
+                                  ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                                  : 'bg-blue-500 hover:bg-blue-600 text-white'
                               }`}
                             >
                               {isPlaying ? (
@@ -434,14 +517,18 @@ export const MusicDialog = ({
                             </button>
                             <button
                               onClick={nextTrack}
-                              className='p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-colors cursor-pointer'
+                              className='p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors cursor-pointer'
                               title='Next Track'
                             >
                               <SkipForward size={16} />
                             </button>
                             <button
                               onClick={toggleMute}
-                              className='p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
+                              className={`p-2 rounded-full transition-colors cursor-pointer ${
+                                isMuted
+                                  ? 'bg-red-800 hover:bg-red-900 text-white'
+                                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+                              }`}
                             >
                               {isMuted ? (
                                 <VolumeX size={16} />
@@ -453,7 +540,7 @@ export const MusicDialog = ({
                         )}
 
                         {/* Window controls */}
-                        <div className='flex items-center gap-1 ml-2'>
+                        <div className='flex items-center gap-2'>
                           <button
                             onClick={handleMinimize}
                             className='p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors cursor-pointer'
@@ -463,7 +550,7 @@ export const MusicDialog = ({
                           </button>
                           <Dialog.Close asChild>
                             <motion.button
-                              className='p-2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer rounded-full hover:bg-gray-100'
+                              className='p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-full transition-colors cursor-pointer'
                               aria-label='Close'
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}

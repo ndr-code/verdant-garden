@@ -18,6 +18,14 @@ interface GridProps {
     active: boolean;
     widgetType: string | null;
   };
+  mergePreview: {
+    visible: boolean;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    boxIds: string[];
+  } | null;
   onAddBox: (x: number, y: number) => void;
   onAssignWidget: (boxId: string) => void;
   onClockWidgetClick: (boxId: string) => void;
@@ -27,6 +35,7 @@ interface GridProps {
   onMouseEnter: (boxId: string) => void;
   onMouseLeave: (boxId: string) => void;
   onMouseUp: (e: React.MouseEvent) => void;
+  onGhostBoxDrop?: (ghostX: number, ghostY: number) => void;
 }
 
 const getPixelPosition = (
@@ -49,6 +58,7 @@ const Grid: React.FC<GridProps> = ({
   gridHeight,
   ghostPositions,
   assignmentMode,
+  mergePreview,
   onAddBox,
   onAssignWidget,
   onClockWidgetClick,
@@ -58,25 +68,49 @@ const Grid: React.FC<GridProps> = ({
   onMouseEnter,
   onMouseLeave,
   onMouseUp,
+  onGhostBoxDrop,
 }) => {
   const renderWidgetContent = (box: GridBox) => {
     if (!box.widget) return null;
 
     // Determine size based on box dimensions
-    const getWidgetSize = (box: GridBox) => {
-      const totalArea = box.width * box.height;
-      if (totalArea >= 4) return 'large'; // 2x2 or bigger
-      if (totalArea >= 2) return 'medium'; // 1x2 or 2x1
-      return 'small'; // 1x1
+    const getWidgetSize = (
+      box: GridBox
+    ):
+      | 'tiny'
+      | 'narrow'
+      | 'wide'
+      | 'small'
+      | 'medium-wide'
+      | 'medium-tall'
+      | 'large'
+      | 'xlarge' => {
+      const { width, height } = box;
+
+      // Map specific dimensions to widget sizes
+      if (width === 1 && height === 1) return 'tiny'; // 1x1
+      if (width === 1 && height > 1) return 'narrow'; // 1xN (any height)
+      if (height === 1 && width > 1) return 'wide'; // Nx1 (any width)
+      if (width === 2 && height === 2) return 'small'; // 2x2
+      if (width === 2 && height === 3) return 'medium-wide'; // 2x3
+      if (width === 3 && height === 2) return 'medium-tall'; // 3x2
+      if (width === 3 && height === 3) return 'large'; // 3x3
+
+      // For anything larger than 3x3
+      return 'xlarge'; // >3x3
     };
 
     const widgetSize = getWidgetSize(box);
 
     switch (box.widget.type) {
       case 'clock':
-        return <Clock size={widgetSize} />;
+        return (
+          <Clock size={widgetSize} width={box.width} height={box.height} />
+        );
       case 'pomodoro':
-        return <Pomodoro size={widgetSize} />;
+        return (
+          <Pomodoro size={widgetSize} width={box.width} height={box.height} />
+        );
       default:
         return null;
     }
@@ -128,17 +162,50 @@ const Grid: React.FC<GridProps> = ({
                 e.currentTarget.style.backgroundColor =
                   'rgba(255, 255, 255, 0.7)';
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.9)';
+                // Handle drag over ghost box
+                if (dragStartBox) {
+                  onMouseEnter(`ghost-${pos.x}-${pos.y}`);
+                }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.opacity = '0.1';
                 e.currentTarget.style.backgroundColor =
                   'rgba(255, 255, 255, 0.5)';
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.7)';
+                // Handle drag leave ghost box
+                if (dragStartBox) {
+                  onMouseLeave(`ghost-${pos.x}-${pos.y}`);
+                }
               }}
-              onClick={() => onAddBox(pos.x, pos.y)}
+              onClick={() => {
+                if (dragStartBox && isDragging) {
+                  // Handle drop to ghost box
+                  if (onGhostBoxDrop) {
+                    onGhostBoxDrop(pos.x, pos.y);
+                  }
+                } else {
+                  // Normal add box behavior
+                  onAddBox(pos.x, pos.y);
+                }
+              }}
             />
           );
         })}
+
+      {/* Merge preview */}
+      {mergePreview && mergePreview.visible && (
+        <div
+          className='absolute rounded-xl border-4 border-white bg-white/40 pointer-events-none z-10'
+          style={{
+            left: (mergePreview.x - bounds.minX) * (BOX_SIZE + GAP),
+            top: (mergePreview.y - bounds.minY) * (BOX_SIZE + GAP),
+            width:
+              mergePreview.width * BOX_SIZE + (mergePreview.width - 1) * GAP,
+            height:
+              mergePreview.height * BOX_SIZE + (mergePreview.height - 1) * GAP,
+          }}
+        />
+      )}
 
       {/* Grid boxes */}
       {boxes.map((box) => {
@@ -191,7 +258,7 @@ const Grid: React.FC<GridProps> = ({
                       rgba(59, 130, 246, 0.6) 8px,
                       rgba(59, 130, 246, 0.6) 16px
                     )`,
-                    animation: 'moveStripes 1.5s linear infinite',
+                    animation: 'dash',
                     backgroundSize: '800px 800px',
                   }}
                 />

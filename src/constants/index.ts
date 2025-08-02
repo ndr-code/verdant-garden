@@ -1,13 +1,13 @@
-export const BOX_SIZE = 80;
-export const GAP = 4;
+export const BOX_SIZE = 60;
+export const GAP = 10;
 export const AVAILABLE_COLORS = [
   '#ffffff',
-  '#ef4444',
-  '#f97316',
-  '#eab308',
-  '#22c55e',
-  '#3b82f6',
-  '#8b5cf6',
-  '#ec4899',
-  '#6b7280',
+  '#fecaca', // soft red
+  '#fed7aa', // soft orange
+  '#fef3c7', // soft yellow
+  '#bbf7d0', // soft green
+  '#bfdbfe', // soft blue
+  '#ddd6fe', // soft purple
+  '#fbcfe8', // soft pink
+  '#e5e7eb', // soft gray
 ];
