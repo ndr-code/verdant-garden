@@ -64,7 +64,7 @@ export const BottomDock = ({
             <Clock
               className={`w-6 h-6 text-white transition-all duration-200 ${
                 editMode
-                  ? 'opacity-50 cursor-not-allowed'
+                  ? 'opacity-20 cursor-not-allowed'
                   : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
               }`}
               onClick={editMode ? undefined : onClockClick}
@@ -82,7 +82,7 @@ export const BottomDock = ({
             <Timer
               className={`w-6 h-6 text-white transition-all duration-200 ${
                 editMode
-                  ? 'opacity-50 cursor-not-allowed'
+                  ? 'opacity-20 cursor-not-allowed'
                   : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
               }`}
               onClick={editMode ? undefined : onTimerClick}
@@ -100,7 +100,7 @@ export const BottomDock = ({
             <SquarePen
               className={`w-6 h-6 text-white transition-all duration-200 ${
                 editMode
-                  ? 'opacity-50 cursor-not-allowed'
+                  ? 'opacity-20 cursor-not-allowed'
                   : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
               }`}
               onClick={editMode ? undefined : onNotesClick}
@@ -118,7 +118,7 @@ export const BottomDock = ({
             <ListChecks
               className={`w-6 h-6 text-white transition-all duration-200 ${
                 editMode
-                  ? 'opacity-50 cursor-not-allowed'
+                  ? 'opacity-20 cursor-not-allowed'
                   : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
               }`}
               onClick={editMode ? undefined : onTodoClick}
@@ -136,7 +136,7 @@ export const BottomDock = ({
             <AudioLines
               className={`w-6 h-6 text-white transition-all duration-200 ${
                 editMode
-                  ? 'opacity-50 cursor-not-allowed'
+                  ? 'opacity-20 cursor-not-allowed'
                   : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
               }`}
               onClick={editMode ? undefined : onMusicClick}
@@ -154,7 +154,7 @@ export const BottomDock = ({
             <Radio
               className={`w-6 h-6 text-white transition-all duration-200 ${
                 editMode
-                  ? 'opacity-50 cursor-not-allowed'
+                  ? 'opacity-20 cursor-not-allowed'
                   : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
               }`}
               onClick={editMode ? undefined : onRadioClick}

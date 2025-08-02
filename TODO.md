@@ -89,4 +89,3 @@ Mungkin :
 - Button untuk membuat 7x7 individual box kosong
 - Slider untuk custom ukuran box, ukuran gap, ukuran rounded
 - Tambahkan animasi explode
-- Sembunyikan bottom dock ketika edit mode
