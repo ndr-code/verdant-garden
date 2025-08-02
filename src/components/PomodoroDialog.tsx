@@ -1,87 +1,35 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { Pomodoro } from './Pomodoro';
 
 interface PomodoroDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAssignToGrid?: () => void;
+  onRemoveWidget?: () => void;
+  mode?: 'assign' | 'view';
 }
 
-export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
+export const PomodoroDialog = ({
+  open,
+  onOpenChange,
+  onAssignToGrid,
+  onRemoveWidget,
+  mode = 'assign',
+}: PomodoroDialogProps) => {
   const [workDuration, setWorkDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [session, setSession] = useState<'work' | 'break'>('work');
 
-  useEffect(() => {
-    let interval: number;
-
-    if (isRunning && timeLeft > 0) {
-      interval = window.setInterval(() => {
-        setTimeLeft((time) => time - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setIsRunning(false);
-
-      if (session === 'work') {
-        setSession('break');
-        setTimeLeft(breakDuration * 60);
-      } else {
-        setSession('work');
-        setTimeLeft(workDuration * 60);
-      }
-    }
-
-    return () => clearInterval(interval);
-  }, [isRunning, timeLeft, session, workDuration, breakDuration]);
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
-      .toString()
-      .padStart(2, '0')}`;
+  const handleAssignToGrid = () => {
+    onAssignToGrid?.();
+    onOpenChange(false);
   };
 
-  const toggleTimer = () => {
-    setIsRunning(!isRunning);
-  };
-
-  const resetTimer = () => {
-    setIsRunning(false);
-    if (session === 'work') {
-      setTimeLeft(workDuration * 60);
-    } else {
-      setTimeLeft(breakDuration * 60);
-    }
-  };
-
-  const switchSession = () => {
-    setIsRunning(false);
-    if (session === 'work') {
-      setSession('break');
-      setTimeLeft(breakDuration * 60);
-    } else {
-      setSession('work');
-      setTimeLeft(workDuration * 60);
-    }
-  };
-
-  const updateWorkDuration = (newDuration: number) => {
-    setWorkDuration(newDuration);
-    if (session === 'work') {
-      setTimeLeft(newDuration * 60);
-    }
-  };
-
-  const updateBreakDuration = (newDuration: number) => {
-    setBreakDuration(newDuration);
-    if (session === 'break') {
-      setTimeLeft(newDuration * 60);
-    }
+  const handleRemoveWidget = () => {
+    onRemoveWidget?.();
+    onOpenChange(false);
   };
 
   return (
@@ -125,128 +73,98 @@ export const PomodoroDialog = ({ open, onOpenChange }: PomodoroDialogProps) => {
                   Pomodoro Timer
                 </Dialog.Title>
 
-                {/* Duration Controls */}
-                <motion.div
-                  className='grid grid-cols-2 gap-4 mb-6 w-full'
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.2 }}
-                >
-                  <div className='text-center'>
-                    <label className='block text-sm font-medium text-gray-600 mb-2'>
-                      Work Duration
-                    </label>
-                    <div className='flex items-center justify-center gap-2'>
-                      <button
-                        onClick={() =>
-                          updateWorkDuration(Math.max(1, workDuration - 1))
-                        }
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
-                        disabled={isRunning}
-                      >
-                        -
-                      </button>
-                      <span className='text-lg font-mono w-12 text-center'>
-                        {workDuration}m
-                      </span>
-                      <button
-                        onClick={() => updateWorkDuration(workDuration + 1)}
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
-                        disabled={isRunning}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
+                <Pomodoro
+                  size='large'
+                  className='mb-6'
+                  workDuration={workDuration}
+                  breakDuration={breakDuration}
+                />
 
-                  <div className='text-center'>
-                    <label className='block text-sm font-medium text-gray-600 mb-2'>
-                      Break Duration
-                    </label>
-                    <div className='flex items-center justify-center gap-2'>
-                      <button
-                        onClick={() =>
-                          updateBreakDuration(Math.max(1, breakDuration - 1))
-                        }
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
-                        disabled={isRunning}
-                      >
-                        -
-                      </button>
-                      <span className='text-lg font-mono w-12 text-center'>
-                        {breakDuration}m
-                      </span>
-                      <button
-                        onClick={() => updateBreakDuration(breakDuration + 1)}
-                        className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
-                        disabled={isRunning}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <div className='text-center mb-6'>
-                  <motion.div
-                    className='text-sm font-medium text-gray-500 mb-2'
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    {session === 'work' ? 'Work Session' : 'Break Time'}
-                  </motion.div>
-
-                  <motion.div
-                    className={`text-6xl font-mono font-bold mb-4 ${
-                      session === 'work' ? 'text-red-500' : 'text-green-500'
-                    }`}
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.1, duration: 0.2 }}
-                  >
-                    {formatTime(timeLeft)}
-                  </motion.div>
-
-                  <motion.div
-                    className='flex justify-center gap-4'
+                {mode === 'assign' ? (
+                  <motion.button
+                    className='bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 cursor-pointer'
+                    onClick={handleAssignToGrid}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.2 }}
+                    transition={{ delay: 0.3, duration: 0.2 }}
                   >
-                    <button
-                      onClick={toggleTimer}
-                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-colors cursor-pointer ${
-                        isRunning
-                          ? 'bg-red-500 hover:bg-red-600 text-white'
-                          : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                    >
-                      {isRunning ? <Pause size={20} /> : <Play size={20} />}
-                    </button>
+                    Assign to Grid
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    className='bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 cursor-pointer'
+                    onClick={handleRemoveWidget}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.2 }}
+                  >
+                    Remove Widget
+                  </motion.button>
+                )}
 
-                    <button
-                      onClick={resetTimer}
-                      className='flex items-center justify-center w-12 h-12 rounded-full bg-gray-500 hover:bg-gray-600 text-white transition-colors cursor-pointer'
-                    >
-                      <RotateCcw size={20} />
-                    </button>
-                  </motion.div>
-
+                {/* Duration Controls (only in assign mode) */}
+                {mode === 'assign' && (
                   <motion.div
-                    className='mt-4'
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
+                    className='grid grid-cols-2 gap-4 mt-6 w-full'
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.2 }}
                   >
-                    <button
-                      onClick={switchSession}
-                      className='text-sm text-gray-600 hover:text-gray-800 transition-colors underline cursor-pointer'
-                    >
-                      Switch to {session === 'work' ? 'Break' : 'Work'} Session
-                    </button>
+                    <div className='text-center'>
+                      <label className='block text-sm font-medium text-gray-600 mb-2'>
+                        Work Duration
+                      </label>
+                      <div className='flex items-center justify-center gap-2'>
+                        <button
+                          onClick={() =>
+                            setWorkDuration(Math.max(1, workDuration - 1))
+                          }
+                          className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
+                        >
+                          -
+                        </button>
+                        <span className='text-lg font-mono w-12 text-center'>
+                          {workDuration}m
+                        </span>
+                        <button
+                          onClick={() => setWorkDuration(workDuration + 1)}
+                          className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className='text-center'>
+                      <label className='block text-sm font-medium text-gray-600 mb-2'>
+                        Break Duration
+                      </label>
+                      <div className='flex items-center justify-center gap-2'>
+                        <button
+                          onClick={() =>
+                            setBreakDuration(Math.max(1, breakDuration - 1))
+                          }
+                          className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
+                        >
+                          -
+                        </button>
+                        <span className='text-lg font-mono w-12 text-center'>
+                          {breakDuration}m
+                        </span>
+                        <button
+                          onClick={() => setBreakDuration(breakDuration + 1)}
+                          className='w-8 h-8 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-700 cursor-pointer'
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
                   </motion.div>
-                </div>
+                )}
 
                 <Dialog.Close asChild>
                   <motion.button

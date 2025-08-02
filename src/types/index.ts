@@ -5,6 +5,10 @@ export interface GridBox {
   width: number;
   height: number;
   color?: string;
+  widget?: {
+    type: 'clock' | 'pomodoro' | 'notes' | 'todo' | 'music' | 'radio';
+    data?: Record<string, unknown>;
+  };
 }
 
 export interface Position {

@@ -1,24 +1,32 @@
-import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Clock } from './Clock';
 
 interface ClockDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAssignToGrid?: () => void;
+  onRemoveWidget?: () => void;
+  mode?: 'assign' | 'view'; // New prop to determine mode
 }
 
-export const ClockDialog = ({ open, onOpenChange }: ClockDialogProps) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
+export const ClockDialog = ({
+  open,
+  onOpenChange,
+  onAssignToGrid,
+  onRemoveWidget,
+  mode = 'assign',
+}: ClockDialogProps) => {
+  const handleAssignToGrid = () => {
+    onAssignToGrid?.();
+    onOpenChange(false);
+  };
 
-  // Clock update effect
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  const handleRemoveWidget = () => {
+    onRemoveWidget?.();
+    onOpenChange(false);
+  };
 
   return (
     <AnimatePresence>
@@ -61,35 +69,33 @@ export const ClockDialog = ({ open, onOpenChange }: ClockDialogProps) => {
                   Digital Clock
                 </Dialog.Title>
 
-                <div className='text-center'>
-                  <motion.div
-                    className='text-6xl font-mono font-bold text-neutral-600 mb-4'
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.1, duration: 0.2 }}
-                  >
-                    {currentTime.toLocaleTimeString('en-US', {
-                      hour12: false,
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                    })}
-                  </motion.div>
+                <Clock size='large' showDate={true} className='mb-6' />
 
-                  <motion.div
-                    className='text-xl text-gray-600 mb-2'
+                {mode === 'assign' ? (
+                  <motion.button
+                    className='bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 cursor-pointer'
+                    onClick={handleAssignToGrid}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.2 }}
+                    transition={{ delay: 0.3, duration: 0.2 }}
                   >
-                    {currentTime.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </motion.div>
-                </div>
+                    Assign to Grid
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    className='bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 cursor-pointer'
+                    onClick={handleRemoveWidget}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.2 }}
+                  >
+                    Remove Widget
+                  </motion.button>
+                )}
 
                 <Dialog.Close asChild>
                   <motion.button

@@ -1,7 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { GridBox, Position } from '../types';
 
+// Constants
+const MAX_GRID_SIZE = 7;
+
 // Utility functions
+const getDefaultBoxes = (): GridBox[] => [
+  { id: '0', x: 0, y: 0, width: 2, height: 1 },
+  { id: '1', x: 2, y: 0, width: 1, height: 2 },
+  { id: '2', x: 0, y: 1, width: 2, height: 2 },
+  { id: '3', x: 2, y: 2, width: 1, height: 1 },
+];
+
 const loadBoxes = (): GridBox[] => {
   try {
     const saved = localStorage.getItem('gridBoxes');
@@ -9,12 +19,12 @@ const loadBoxes = (): GridBox[] => {
       const parsed = JSON.parse(saved);
       return Array.isArray(parsed) && parsed.length > 0
         ? parsed
-        : [{ id: '0', x: 0, y: 0, width: 1, height: 1 }];
+        : getDefaultBoxes();
     }
   } catch (error) {
     console.error('Error loading boxes from localStorage:', error);
   }
-  return [{ id: '0', x: 0, y: 0, width: 1, height: 1 }];
+  return getDefaultBoxes();
 };
 
 export const useEditMode = () => {
@@ -39,6 +49,20 @@ export const useEditMode = () => {
     x: 0,
     y: 0,
     boxId: '',
+  });
+  const [assignmentMode, setAssignmentMode] = useState<{
+    active: boolean;
+    widgetType:
+      | 'clock'
+      | 'pomodoro'
+      | 'notes'
+      | 'todo'
+      | 'music'
+      | 'radio'
+      | null;
+  }>({
+    active: false,
+    widgetType: null,
   });
 
   // Effects
@@ -135,8 +159,7 @@ export const useEditMode = () => {
   const confirmReset = useCallback(async () => {
     setIsResetting(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
-    const initialBox: GridBox = { id: '0', x: 0, y: 0, width: 1, height: 1 };
-    const newBoxes = [initialBox];
+    const newBoxes = getDefaultBoxes();
     setBoxes(newBoxes);
     saveToHistory(newBoxes);
     setIsDragging(false);
@@ -148,6 +171,26 @@ export const useEditMode = () => {
 
   const addBox = useCallback(
     (x: number, y: number) => {
+      // Get current grid bounds
+      let minX = x,
+        maxX = x,
+        minY = y,
+        maxY = y;
+      if (boxes.length > 0) {
+        minX = Math.min(x, ...boxes.map((box) => box.x));
+        maxX = Math.max(x, ...boxes.map((box) => box.x + box.width - 1));
+        minY = Math.min(y, ...boxes.map((box) => box.y));
+        maxY = Math.max(y, ...boxes.map((box) => box.y + box.height - 1));
+      }
+
+      // Check if adding this box would exceed 7x7 grid
+      const gridWidth = maxX - minX + 1;
+      const gridHeight = maxY - minY + 1;
+
+      if (gridWidth > MAX_GRID_SIZE || gridHeight > MAX_GRID_SIZE) {
+        return;
+      }
+
       const newBox: GridBox = {
         id: Date.now().toString(),
         x,
@@ -218,6 +261,18 @@ export const useEditMode = () => {
     const occupiedPositions = new Set<string>();
     const ghostPositions = new Set<string>();
 
+    // Get current grid bounds
+    let minX = 0,
+      maxX = 0,
+      minY = 0,
+      maxY = 0;
+    if (boxes.length > 0) {
+      minX = Math.min(...boxes.map((box) => box.x));
+      maxX = Math.max(...boxes.map((box) => box.x + box.width - 1));
+      minY = Math.min(...boxes.map((box) => box.y));
+      maxY = Math.max(...boxes.map((box) => box.y + box.height - 1));
+    }
+
     boxes.forEach((box) => {
       for (let i = 0; i < box.width; i++) {
         for (let j = 0; j < box.height; j++) {
@@ -233,10 +288,10 @@ export const useEditMode = () => {
           const currentY = box.y + j;
 
           const directions = [
-            { x: 0, y: -1 },
-            { x: 1, y: 0 },
-            { x: 0, y: 1 },
-            { x: -1, y: 0 },
+            { x: 0, y: -1 }, // atas
+            { x: 1, y: 0 }, // kanan
+            { x: 0, y: 1 }, // bawah
+            { x: -1, y: 0 }, // kiri
           ];
 
           directions.forEach((dir) => {
@@ -245,7 +300,31 @@ export const useEditMode = () => {
             const posKey = `${newX},${newY}`;
 
             if (!occupiedPositions.has(posKey)) {
-              ghostPositions.add(posKey);
+              // Calculate bounds if this position is added
+              const newMinX = Math.min(minX, newX);
+              const newMaxX = Math.max(maxX, newX);
+              const newMinY = Math.min(minY, newY);
+              const newMaxY = Math.max(maxY, newY);
+
+              const newGridWidth = newMaxX - newMinX + 1;
+              const newGridHeight = newMaxY - newMinY + 1;
+
+              // Allow position if either:
+              // 1. Both width and height are within limits, OR
+              // 2. Only width exceeds limit but height is within limit (vertical expansion), OR
+              // 3. Only height exceeds limit but width is within limit (horizontal expansion)
+              const widthOk = newGridWidth <= MAX_GRID_SIZE;
+              const heightOk = newGridHeight <= MAX_GRID_SIZE;
+
+              if (widthOk && heightOk) {
+                ghostPositions.add(posKey);
+              } else if (!widthOk && heightOk && dir.x === 0) {
+                // Width exceeded but height OK, allow vertical movement (up/down)
+                ghostPositions.add(posKey);
+              } else if (widthOk && !heightOk && dir.y === 0) {
+                // Height exceeded but width OK, allow horizontal movement (left/right)
+                ghostPositions.add(posKey);
+              }
             }
           });
         }
@@ -338,11 +417,17 @@ export const useEditMode = () => {
           color: sourceBox.color,
         };
 
-        const newBoxes = boxes
-          .filter((box) => !boxesToRemove.has(box.id))
-          .concat(mergedBox);
-        setBoxes(newBoxes);
-        saveToHistory(newBoxes);
+        // Check if merged box would exceed 7x7 grid
+        const gridWidth = maxX - minX + 1;
+        const gridHeight = maxY - minY + 1;
+
+        if (gridWidth <= MAX_GRID_SIZE && gridHeight <= MAX_GRID_SIZE) {
+          const newBoxes = boxes
+            .filter((box) => !boxesToRemove.has(box.id))
+            .concat(mergedBox);
+          setBoxes(newBoxes);
+          saveToHistory(newBoxes);
+        }
         setIsDragging(false);
         setDragStartBox(null);
         setDragOverBox(null);
@@ -368,6 +453,49 @@ export const useEditMode = () => {
     }
   }, []);
 
+  // Assignment mode functions
+  const startAssignmentMode = useCallback(
+    (
+      widgetType: 'clock' | 'pomodoro' | 'notes' | 'todo' | 'music' | 'radio'
+    ) => {
+      setAssignmentMode({ active: true, widgetType });
+    },
+    []
+  );
+
+  const cancelAssignmentMode = useCallback(() => {
+    setAssignmentMode({ active: false, widgetType: null });
+  }, []);
+
+  const assignWidgetToBox = useCallback(
+    (boxId: string) => {
+      if (!assignmentMode.active || !assignmentMode.widgetType) return;
+
+      const newBoxes = boxes.map((box) =>
+        box.id === boxId
+          ? { ...box, widget: { type: assignmentMode.widgetType!, data: {} } }
+          : box
+      );
+
+      setBoxes(newBoxes);
+      saveToHistory(newBoxes);
+      setAssignmentMode({ active: false, widgetType: null });
+    },
+    [boxes, assignmentMode, saveToHistory]
+  );
+
+  const deleteWidget = useCallback(
+    (boxId: string) => {
+      const newBoxes = boxes.map((box) =>
+        box.id === boxId ? { ...box, widget: undefined } : box
+      );
+
+      setBoxes(newBoxes);
+      saveToHistory(newBoxes);
+    },
+    [boxes, saveToHistory]
+  );
+
   return {
     // State
     boxes,
@@ -381,6 +509,7 @@ export const useEditMode = () => {
     historyIndex,
     contextMenu,
     colorPicker,
+    assignmentMode,
 
     // Actions
     toggleEditMode,
@@ -408,5 +537,11 @@ export const useEditMode = () => {
     setIsDragging,
     setContextMenu,
     setColorPicker,
+
+    // Assignment mode
+    startAssignmentMode,
+    cancelAssignmentMode,
+    assignWidgetToBox,
+    deleteWidget,
   };
 };
