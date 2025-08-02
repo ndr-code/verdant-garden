@@ -3,6 +3,7 @@ import type { GridBox, Position } from '../types';
 
 // Constants
 const MAX_GRID_SIZE = 7;
+const MAX_BOX_SIZE = 5;
 
 // Utility functions
 const getDefaultBoxes = (): GridBox[] => [
@@ -174,7 +175,7 @@ export const useEditMode = () => {
         const width = maxX - minX + 1;
         const height = maxY - minY + 1;
 
-        if (width <= MAX_GRID_SIZE && height <= MAX_GRID_SIZE) {
+        if (width <= MAX_BOX_SIZE && height <= MAX_BOX_SIZE) {
           setMergePreview({
             visible: true,
             x: minX,
@@ -260,8 +261,8 @@ export const useEditMode = () => {
 
         if (
           canMerge &&
-          mergeWidth <= MAX_GRID_SIZE &&
-          mergeHeight <= MAX_GRID_SIZE
+          mergeWidth <= MAX_BOX_SIZE &&
+          mergeHeight <= MAX_BOX_SIZE
         ) {
           setMergePreview({
             visible: true,
@@ -697,11 +698,11 @@ export const useEditMode = () => {
             widget: sourceBox.widget || targetBox.widget,
           };
 
-          // Check if merged box would exceed 7x7 grid
+          // Check if merged box would exceed 5x5 box size limit
           const gridWidth = maxX - minX + 1;
           const gridHeight = maxY - minY + 1;
 
-          if (gridWidth <= MAX_GRID_SIZE && gridHeight <= MAX_GRID_SIZE) {
+          if (gridWidth <= MAX_BOX_SIZE && gridHeight <= MAX_BOX_SIZE) {
             const newBoxes = boxes
               .filter((box) => !boxesToRemove.has(box.id))
               .concat(mergedBox);
@@ -785,8 +786,8 @@ export const useEditMode = () => {
             if (!canMerge) break;
           }
 
-          // Check if merged box would exceed 7x7 grid limits
-          if (mergeWidth > MAX_GRID_SIZE || mergeHeight > MAX_GRID_SIZE) {
+          // Check if merged box would exceed 5x5 box size limits
+          if (mergeWidth > MAX_BOX_SIZE || mergeHeight > MAX_BOX_SIZE) {
             canMerge = false;
           }
 
