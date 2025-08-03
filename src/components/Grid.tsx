@@ -3,6 +3,7 @@ import type { GridBox, Position } from '../types';
 import { BOX_SIZE, GAP } from '../constants';
 import { Clock } from './Clock';
 import { Pomodoro } from './Pomodoro';
+import { Notes } from './Notes';
 
 interface GridProps {
   boxes: GridBox[];
@@ -33,6 +34,7 @@ interface GridProps {
   onAssignWidgetByDrag?: (boxId: string, widgetType: string) => void;
   onClockWidgetClick: (boxId: string) => void;
   onPomodoroWidgetClick: (boxId: string) => void;
+  onNotesWidgetClick: (boxId: string) => void;
   onMouseDown: (e: React.MouseEvent, boxId: string) => void;
   onContextMenu: (e: React.MouseEvent, boxId: string) => void;
   onMouseEnter: (boxId: string) => void;
@@ -71,6 +73,7 @@ const Grid: React.FC<GridProps> = ({
   onAssignWidgetByDrag,
   onClockWidgetClick,
   onPomodoroWidgetClick,
+  onNotesWidgetClick,
   onMouseDown,
   onContextMenu,
   onMouseEnter,
@@ -121,6 +124,10 @@ const Grid: React.FC<GridProps> = ({
         return (
           <Pomodoro size={widgetSize} width={box.width} height={box.height} />
         );
+      case 'notes':
+        return (
+          <Notes size={widgetSize} width={box.width} height={box.height} />
+        );
       default:
         return null;
     }
@@ -134,6 +141,8 @@ const Grid: React.FC<GridProps> = ({
         onClockWidgetClick(box.id);
       } else if (box.widget.type === 'pomodoro') {
         onPomodoroWidgetClick(box.id);
+      } else if (box.widget.type === 'notes') {
+        onNotesWidgetClick(box.id);
       }
     }
   };
@@ -266,11 +275,7 @@ const Grid: React.FC<GridProps> = ({
               className={`absolute rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer
                 ${isDragging && dragStartBox === box.id ? 'opacity-70' : ''} 
                 ${dragOverBox === box.id ? 'ring-2 ring-blue-400' : ''}
-                ${
-                  invalidMergeTarget === box.id
-                    ? 'ring-3 ring-red-500'
-                    : ''
-                }
+                ${invalidMergeTarget === box.id ? 'ring-3 ring-red-500' : ''}
                 ${assignmentMode.active && !box.widget ? 'assignment-glow' : ''}
                 ${assignmentMode.active && box.widget ? 'opacity-50' : ''}
                 ${explodingBoxId === box.id ? 'animate-explode' : ''}

@@ -53,14 +53,7 @@ export const useEditMode = () => {
   });
   const [assignmentMode, setAssignmentMode] = useState<{
     active: boolean;
-    widgetType:
-      | 'clock'
-      | 'pomodoro'
-      | 'notes'
-      | 'todo'
-      | 'music'
-      | 'radio'
-      | null;
+    widgetType: 'clock' | 'pomodoro' | 'notes' | 'music' | 'radio' | null;
   }>({
     active: false,
     widgetType: null,
@@ -89,7 +82,9 @@ export const useEditMode = () => {
   const [isSpawning, setIsSpawning] = useState(false);
   const [showExplodeDialog, setShowExplodeDialog] = useState(false);
   const [isExploding, setIsExploding] = useState(false);
-  const [invalidMergeTarget, setInvalidMergeTarget] = useState<string | null>(null);
+  const [invalidMergeTarget, setInvalidMergeTarget] = useState<string | null>(
+    null
+  );
 
   // Effects
   const clearMergePreview = useCallback(() => {
@@ -948,9 +943,7 @@ export const useEditMode = () => {
 
   // Assignment mode functions
   const startAssignmentMode = useCallback(
-    (
-      widgetType: 'clock' | 'pomodoro' | 'notes' | 'todo' | 'music' | 'radio'
-    ) => {
+    (widgetType: 'clock' | 'pomodoro' | 'notes' | 'music' | 'radio') => {
       setAssignmentMode({ active: true, widgetType });
     },
     []
@@ -1011,7 +1004,6 @@ export const useEditMode = () => {
         draggedWidgetType === 'clock' ||
         draggedWidgetType === 'pomodoro' ||
         draggedWidgetType === 'notes' ||
-        draggedWidgetType === 'todo' ||
         draggedWidgetType === 'music' ||
         draggedWidgetType === 'radio'
       ) {

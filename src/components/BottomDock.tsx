@@ -1,11 +1,4 @@
-import {
-  Clock,
-  Timer,
-  SquarePen,
-  ListChecks,
-  AudioLines,
-  Radio,
-} from 'lucide-react';
+import { Clock, Timer, SquarePen, AudioLines, Radio } from 'lucide-react';
 import { Tooltip, TooltipProvider } from './Tooltip';
 
 interface BottomDockProps {
@@ -13,7 +6,6 @@ interface BottomDockProps {
   onClockClick: () => void;
   onTimerClick: () => void;
   onNotesClick: () => void;
-  onTodoClick: () => void;
   onMusicClick: () => void;
   onRadioClick: () => void;
   onWidgetDragStart?: (widgetType: string) => void;
@@ -25,7 +17,6 @@ export const BottomDock = ({
   onClockClick,
   onTimerClick,
   onNotesClick,
-  onTodoClick,
   onMusicClick,
   onRadioClick,
   onWidgetDragStart,
@@ -104,24 +95,6 @@ export const BottomDock = ({
                   : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
               }`}
               onClick={editMode ? undefined : onNotesClick}
-            />
-          </div>
-        </Tooltip>
-
-        <Tooltip content={editMode ? 'Disabled in Edit Mode' : 'Todo'}>
-          <div
-            draggable={!editMode}
-            onDragStart={(e) => handleDragStart(e, 'todo')}
-            onDragEnd={handleDragEnd}
-            className='inline-block'
-          >
-            <ListChecks
-              className={`w-6 h-6 text-white transition-all duration-200 ${
-                editMode
-                  ? 'opacity-20 cursor-not-allowed'
-                  : 'cursor-pointer hover:scale-110 hover:-translate-y-1'
-              }`}
-              onClick={editMode ? undefined : onTodoClick}
             />
           </div>
         </Tooltip>

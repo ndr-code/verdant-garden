@@ -12,7 +12,6 @@ import Grid from './components/Grid';
 import { ClockDialog } from './components/ClockDialog';
 import { PomodoroDialog } from './components/PomodoroDialog';
 import { NotesDialog } from './components/NotesDialog';
-import { TodoDialog } from './components/TodoDialog';
 import { MusicDialog } from './components/MusicDialog';
 import { RadioDialog } from './components/RadioDialog';
 import { BottomDock } from './components/BottomDock';
@@ -95,7 +94,6 @@ function App() {
     string | null
   >(null);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
-  const [showTodoDialog, setShowTodoDialog] = useState(false);
   const [showMusicDialog, setShowMusicDialog] = useState(false);
   const [showRadioDialog, setShowRadioDialog] = useState(false);
   const [isMusicMinimized, setIsMusicMinimized] = useState(false);
@@ -113,22 +111,16 @@ function App() {
 
   // Handle widget assignment by drag
   const handleAssignWidgetByDrag = (boxId: string, widgetType: string) => {
-    // Find the box and check if it doesn't already have a widget
-    const box = boxes.find((b) => b.id === boxId);
-    if (box && !box.widget) {
-      // Start assignment mode with the specific widget type
-      if (
-        widgetType === 'clock' ||
-        widgetType === 'pomodoro' ||
-        widgetType === 'notes' ||
-        widgetType === 'todo' ||
-        widgetType === 'music' ||
-        widgetType === 'radio'
-      ) {
-        startAssignmentMode(widgetType);
-        // Assign immediately without delay since assignment mode is now active
-        assignWidgetToBox(boxId);
-      }
+    if (
+      widgetType === 'clock' ||
+      widgetType === 'pomodoro' ||
+      widgetType === 'notes' ||
+      widgetType === 'music' ||
+      widgetType === 'radio'
+    ) {
+      startAssignmentMode(widgetType);
+      // Assign immediately without delay since assignment mode is now active
+      assignWidgetToBox(boxId);
     }
   };
 
@@ -250,6 +242,11 @@ function App() {
               setSelectedPomodoroBoxId(boxId);
               setPomodoroDialogMode('view');
               setShowPomodoroDialog(true);
+            }
+          }}
+          onNotesWidgetClick={(_boxId: string) => {
+            if (!editMode) {
+              setShowNotesDialog(true);
             }
           }}
           onMouseDown={(e, boxId) => {
@@ -382,7 +379,6 @@ function App() {
           mode={pomodoroDialogMode}
         />
         <NotesDialog open={showNotesDialog} onOpenChange={setShowNotesDialog} />
-        <TodoDialog open={showTodoDialog} onOpenChange={setShowTodoDialog} />
         <RadioDialog open={showRadioDialog} onOpenChange={setShowRadioDialog} />
         <MusicDialog
           open={showMusicDialog}
@@ -415,11 +411,6 @@ function App() {
         onNotesClick={() => {
           if (!editMode) {
             setShowNotesDialog(true);
-          }
-        }}
-        onTodoClick={() => {
-          if (!editMode) {
-            setShowTodoDialog(true);
           }
         }}
         onMusicClick={() => {

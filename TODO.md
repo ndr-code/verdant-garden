@@ -90,3 +90,7 @@ Mungkin :
 - Slider untuk custom ukuran box, ukuran gap, ukuran rounded
 - [x] Tambahkan animasi explode
 - gimana caranya agar box merge bisa berbelok?
+- Ada box untuk visualizer music?
+- fungsikan pencarian music di youtube untuk dapat dimasukkan ke dalam playlist
+- fungsikan memindahkan Box beserta widget di dalamnya, tambahkan preview sebelum dieksekusi
+ 
