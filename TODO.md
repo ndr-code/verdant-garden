@@ -85,7 +85,7 @@ Mungkin :
 - Note pendek akan ditampilkan penuh di widgetm Note panjang hanya menampilkan judul dan ada indikasi bawah Note ini panjang, fungsikan RTE (?)
 - Ada fitur slide page, jadi bisa punya beberapa konfigurasi grid
 - Animasi ketika page diload: blooming effect / ripple effect dari tiap box
-- Button untuk randomize konfigurasi box
-- Button untuk membuat 7x7 individual box kosong
+- [ ] Button untuk randomize konfigurasi box
+- [x] Button untuk membuat 7x7 individual box kosong
 - Slider untuk custom ukuran box, ukuran gap, ukuran rounded
 - [x] Tambahkan animasi explode

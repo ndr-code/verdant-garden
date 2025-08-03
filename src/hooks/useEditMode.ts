@@ -85,6 +85,10 @@ export const useEditMode = () => {
     startBox: GridBox;
   } | null>(null);
   const [explodingBoxId, setExplodingBoxId] = useState<string | null>(null);
+  const [showSpawnDialog, setShowSpawnDialog] = useState(false);
+  const [isSpawning, setIsSpawning] = useState(false);
+  const [showExplodeDialog, setShowExplodeDialog] = useState(false);
+  const [isExploding, setIsExploding] = useState(false);
 
   // Effects
   const clearMergePreview = useCallback(() => {
@@ -401,6 +405,14 @@ export const useEditMode = () => {
     setShowResetDialog(true);
   }, []);
 
+  const spawnGrid = useCallback(() => {
+    setShowSpawnDialog(true);
+  }, []);
+
+  const explodeGrid = useCallback(() => {
+    setShowExplodeDialog(true);
+  }, []);
+
   const confirmReset = useCallback(async () => {
     setIsResetting(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
@@ -413,6 +425,68 @@ export const useEditMode = () => {
     setIsResetting(false);
     setShowResetDialog(false);
   }, [saveToHistory]);
+
+  const confirmSpawn = useCallback(async () => {
+    setIsSpawning(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const grid7x7: GridBox[] = [];
+    // Create 7x7 grid of individual boxes
+    for (let x = 0; x < 7; x++) {
+      for (let y = 0; y < 7; y++) {
+        grid7x7.push({
+          id: `${Date.now()}-${x}-${y}`,
+          x,
+          y,
+          width: 1,
+          height: 1,
+          color: '#ffffff', // Default white color
+          widget: undefined,
+        });
+      }
+    }
+
+    setBoxes(grid7x7);
+    saveToHistory(grid7x7);
+    setIsSpawning(false);
+    setShowSpawnDialog(false);
+  }, [saveToHistory]);
+
+  const confirmExplode = useCallback(async () => {
+    setIsExploding(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const allIndividualBoxes: GridBox[] = [];
+    boxes.forEach((box) => {
+      if (box.width === 1 && box.height === 1) {
+        // Box is already individual, keep as is but remove widget
+        allIndividualBoxes.push({
+          ...box,
+          widget: undefined,
+        });
+      } else {
+        // Break down merged box into individual boxes without widgets
+        for (let i = 0; i < box.width; i++) {
+          for (let j = 0; j < box.height; j++) {
+            allIndividualBoxes.push({
+              id: `${Date.now()}-${box.id}-${i}-${j}`,
+              x: box.x + i,
+              y: box.y + j,
+              width: 1,
+              height: 1,
+              color: box.color,
+              widget: undefined,
+            });
+          }
+        }
+      }
+    });
+
+    setBoxes(allIndividualBoxes);
+    saveToHistory(allIndividualBoxes);
+    setIsExploding(false);
+    setShowExplodeDialog(false);
+  }, [boxes, saveToHistory]);
 
   const addBox = useCallback(
     (x: number, y: number) => {
@@ -954,6 +1028,10 @@ export const useEditMode = () => {
     dragOverBox,
     showResetDialog,
     isResetting,
+    showSpawnDialog,
+    isSpawning,
+    showExplodeDialog,
+    isExploding,
     editMode,
     history,
     historyIndex,
@@ -972,6 +1050,10 @@ export const useEditMode = () => {
     redo,
     resetGrid,
     confirmReset,
+    spawnGrid,
+    confirmSpawn,
+    explodeGrid,
+    confirmExplode,
     addBox,
     deleteBox,
     unmergeBox,
@@ -992,6 +1074,8 @@ export const useEditMode = () => {
 
     // Setters (for event handlers)
     setShowResetDialog,
+    setShowSpawnDialog,
+    setShowExplodeDialog,
     setDragStartBox,
     setDragOverBox,
     setIsDragging,

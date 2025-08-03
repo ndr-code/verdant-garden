@@ -5,7 +5,7 @@ import { BOX_SIZE, GAP } from './constants';
 
 // Import components
 import { ControlButtons } from './components/ControlButtons';
-import { ResetDialog } from './components/ResetDialog';
+import { ConfirmDialog } from './components/ConfirmDialog';
 import { ContextMenu } from './components/ContextMenu';
 import { ColorPicker } from './components/ColorPicker';
 import Grid from './components/Grid';
@@ -31,6 +31,10 @@ function App() {
     dragOverBox,
     showResetDialog,
     isResetting,
+    showSpawnDialog,
+    isSpawning,
+    showExplodeDialog,
+    isExploding,
     editMode,
     historyIndex,
     history,
@@ -44,17 +48,21 @@ function App() {
     redo,
     resetGrid,
     confirmReset,
+    spawnGrid,
+    confirmSpawn,
+    explodeGrid,
+    confirmExplode,
     addBox,
     deleteBox,
     unmergeBox,
-    explodeAllBoxes,
-    spawn7x7,
     changeBoxColor,
     mergeBoxes,
     getGhostPositions,
     handleColorHover,
     handleColorLeave,
     setShowResetDialog,
+    setShowSpawnDialog,
+    setShowExplodeDialog,
     setDragStartBox,
     setDragOverBox,
     setIsDragging,
@@ -171,17 +179,43 @@ function App() {
           onUndo={undo}
           onRedo={redo}
           onReset={resetGrid}
-          onExplode={explodeAllBoxes}
-          onSpawn={spawn7x7}
+          onExplode={explodeGrid}
+          onSpawn={spawnGrid}
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
         />
 
-        <ResetDialog
+        <ConfirmDialog
           open={showResetDialog}
           onOpenChange={setShowResetDialog}
           onConfirm={confirmReset}
-          isResetting={isResetting}
+          isProcessing={isResetting}
+          title='Reset Grid'
+          description='This will remove all boxes and reset the grid to empty state. Are you sure?'
+          confirmText='Yes, Reset'
+          processingText='Resetting...'
+        />
+
+        <ConfirmDialog
+          open={showSpawnDialog}
+          onOpenChange={setShowSpawnDialog}
+          onConfirm={confirmSpawn}
+          isProcessing={isSpawning}
+          title='Spawn 7x7 Grid'
+          description='This will replace all current boxes with a new 7x7 grid of individual boxes. Are you sure?'
+          confirmText='Yes, Spawn'
+          processingText='Spawning...'
+        />
+
+        <ConfirmDialog
+          open={showExplodeDialog}
+          onOpenChange={setShowExplodeDialog}
+          onConfirm={confirmExplode}
+          isProcessing={isExploding}
+          title='Explode All Boxes'
+          description='This will break down all merged boxes into individual 1x1 boxes and remove all widgets. Are you sure?'
+          confirmText='Yes, Explode'
+          processingText='Exploding...'
         />
 
         <Grid
