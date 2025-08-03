@@ -27,6 +27,7 @@ interface GridProps {
     boxIds: string[];
   } | null;
   explodingBoxId: string | null;
+  invalidMergeTarget: string | null;
   onAddBox: (x: number, y: number) => void;
   onAssignWidget: (boxId: string) => void;
   onAssignWidgetByDrag?: (boxId: string, widgetType: string) => void;
@@ -64,6 +65,7 @@ const Grid: React.FC<GridProps> = ({
   assignmentMode,
   mergePreview,
   explodingBoxId,
+  invalidMergeTarget,
   onAddBox,
   onAssignWidget,
   onAssignWidgetByDrag,
@@ -264,6 +266,11 @@ const Grid: React.FC<GridProps> = ({
               className={`absolute rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer
                 ${isDragging && dragStartBox === box.id ? 'opacity-70' : ''} 
                 ${dragOverBox === box.id ? 'ring-2 ring-blue-400' : ''}
+                ${
+                  invalidMergeTarget === box.id
+                    ? 'ring-3 ring-red-500'
+                    : ''
+                }
                 ${assignmentMode.active && !box.widget ? 'assignment-glow' : ''}
                 ${assignmentMode.active && box.widget ? 'opacity-50' : ''}
                 ${explodingBoxId === box.id ? 'animate-explode' : ''}

@@ -89,3 +89,4 @@ Mungkin :
 - [x] Button untuk membuat 7x7 individual box kosong
 - Slider untuk custom ukuran box, ukuran gap, ukuran rounded
 - [x] Tambahkan animasi explode
+- gimana caranya agar box merge bisa berbelok?

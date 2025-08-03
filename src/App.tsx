@@ -43,6 +43,7 @@ function App() {
     assignmentMode,
     mergePreview,
     explodingBoxId,
+    invalidMergeTarget,
     toggleEditMode,
     undo,
     redo,
@@ -231,6 +232,7 @@ function App() {
           assignmentMode={assignmentMode}
           mergePreview={mergePreview}
           explodingBoxId={explodingBoxId}
+          invalidMergeTarget={invalidMergeTarget}
           onAddBox={addBox}
           onAssignWidget={assignWidgetToBox}
           onAssignWidgetByDrag={handleAssignWidgetByDrag}

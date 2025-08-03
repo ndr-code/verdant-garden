@@ -89,10 +89,12 @@ export const useEditMode = () => {
   const [isSpawning, setIsSpawning] = useState(false);
   const [showExplodeDialog, setShowExplodeDialog] = useState(false);
   const [isExploding, setIsExploding] = useState(false);
+  const [invalidMergeTarget, setInvalidMergeTarget] = useState<string | null>(null);
 
   // Effects
   const clearMergePreview = useCallback(() => {
     setMergePreview(null);
+    setInvalidMergeTarget(null);
   }, []);
 
   const clearDragArea = useCallback(() => {
@@ -106,6 +108,7 @@ export const useEditMode = () => {
 
       if (!sourceBox || !targetBox) {
         setMergePreview(null);
+        setInvalidMergeTarget(null);
         return;
       }
 
@@ -189,8 +192,10 @@ export const useEditMode = () => {
             height,
             boxIds: Array.from(boxesToMerge),
           });
+          setInvalidMergeTarget(null);
         } else {
           setMergePreview(null);
+          setInvalidMergeTarget(targetId);
         }
       } else {
         // Multi-box merge calculation
@@ -277,8 +282,10 @@ export const useEditMode = () => {
             height: mergeHeight,
             boxIds: Array.from(boxesToMerge),
           });
+          setInvalidMergeTarget(null);
         } else {
           setMergePreview(null);
+          setInvalidMergeTarget(targetId);
         }
       }
     },
@@ -1043,6 +1050,7 @@ export const useEditMode = () => {
     isDraggingWidget,
     draggedWidgetType,
     explodingBoxId,
+    invalidMergeTarget,
 
     // Actions
     toggleEditMode,
