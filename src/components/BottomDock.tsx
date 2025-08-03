@@ -53,7 +53,7 @@ export const BottomDock = ({
 
   return (
     <TooltipProvider>
-      <div className='h-16 bg-white/10 w-full flex-shrink-0 border-t-2 rounded-lg border-white/20 flex items-center justify-center gap-8 px-8'>
+      <div className='h-16 bg-white/10 w-full flex-shrink-0 border-t-2 border-white/20 flex items-center justify-center gap-8 px-8'>
         <Tooltip content={editMode ? 'Disabled in Edit Mode' : 'Clock'}>
           <div
             draggable={!editMode}

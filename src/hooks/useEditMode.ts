@@ -491,7 +491,7 @@ export const useEditMode = () => {
         saveToHistory(newBoxes);
         setContextMenu({ visible: false, x: 0, y: 0, boxId: '' });
         setExplodingBoxId(null);
-      }, 300); 
+      }, 300);
     },
     [boxes, saveToHistory]
   );
@@ -528,6 +528,28 @@ export const useEditMode = () => {
     setBoxes(allIndividualBoxes);
     saveToHistory(allIndividualBoxes);
   }, [boxes, saveToHistory]);
+
+  const spawn7x7 = useCallback(() => {
+    const grid7x7: GridBox[] = [];
+
+    // Create 7x7 grid of individual boxes
+    for (let x = 0; x < 7; x++) {
+      for (let y = 0; y < 7; y++) {
+        grid7x7.push({
+          id: `${Date.now()}-${x}-${y}`,
+          x,
+          y,
+          width: 1,
+          height: 1,
+          color: '#ffffff', // Default white color
+          widget: undefined,
+        });
+      }
+    }
+
+    setBoxes(grid7x7);
+    saveToHistory(grid7x7);
+  }, [saveToHistory]);
 
   const changeBoxColor = useCallback(
     (boxId: string, newColor: string) => {
@@ -954,6 +976,7 @@ export const useEditMode = () => {
     deleteBox,
     unmergeBox,
     explodeAllBoxes,
+    spawn7x7,
     changeBoxColor,
     mergeBoxes,
 

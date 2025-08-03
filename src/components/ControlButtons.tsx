@@ -1,4 +1,4 @@
-import { Undo2, Redo2, RotateCcw, Edit3, Loader } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Edit3, Loader, Grid } from 'lucide-react';
 
 interface ControlButtonsProps {
   editMode: boolean;
@@ -7,6 +7,7 @@ interface ControlButtonsProps {
   onRedo: () => void;
   onReset: () => void;
   onExplode: () => void;
+  onSpawn: () => void;
   canUndo: boolean;
   canRedo: boolean;
 }
@@ -18,6 +19,7 @@ export const ControlButtons = ({
   onRedo,
   onReset,
   onExplode,
+  onSpawn,
   canUndo,
   canRedo,
 }: ControlButtonsProps) => (
@@ -57,6 +59,15 @@ export const ControlButtons = ({
         title='Explode (Unmerge all boxes)'
       >
         <Loader size={20} />
+      </button>
+    )}
+    {editMode && (
+      <button
+        onClick={onSpawn}
+        className='w-12 h-12 cursor-pointer bg-gray-500 hover:bg-red-800 text-white rounded-lg shadow-lg transition-colors duration-200 font-medium flex items-center justify-center border-0'
+        title='Spawn 7x7 Grid'
+      >
+        <Grid size={20} />
       </button>
     )}
     {editMode && (

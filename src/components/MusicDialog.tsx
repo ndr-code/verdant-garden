@@ -71,6 +71,13 @@ const ambienceTracks: AmbienceTrack[] = [
     youtubeId: 'SNEO45OlmR0',
     category: 'Piano',
   },
+  {
+    id: '6',
+    title: 'Ólafur Arnalds: NPR Music Tiny Desk Concert ',
+    description: 'Listen to NPR Music Tiny Desk Concert by Ólafur Arnalds',
+    youtubeId: 'TpO_8tk6yNQ',
+    category: 'Piano',
+  },
 ];
 
 // Mini Player Component - moved outside to prevent re-animation

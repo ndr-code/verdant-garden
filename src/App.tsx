@@ -48,6 +48,7 @@ function App() {
     deleteBox,
     unmergeBox,
     explodeAllBoxes,
+    spawn7x7,
     changeBoxColor,
     mergeBoxes,
     getGhostPositions,
@@ -171,6 +172,7 @@ function App() {
           onRedo={redo}
           onReset={resetGrid}
           onExplode={explodeAllBoxes}
+          onSpawn={spawn7x7}
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
         />
