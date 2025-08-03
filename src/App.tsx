@@ -244,9 +244,19 @@ function App() {
               setShowPomodoroDialog(true);
             }
           }}
-          onNotesWidgetClick={(_boxId: string) => {
+          onNotesWidgetClick={() => {
             if (!editMode) {
               setShowNotesDialog(true);
+            }
+          }}
+          onMusicWidgetClick={() => {
+            if (!editMode) {
+              setShowMusicDialog(true);
+            }
+          }}
+          onRadioWidgetClick={() => {
+            if (!editMode) {
+              setShowRadioDialog(true);
             }
           }}
           onMouseDown={(e, boxId) => {
