@@ -84,6 +84,7 @@ export const useEditMode = () => {
     maxY: number;
     startBox: GridBox;
   } | null>(null);
+  const [explodingBoxId, setExplodingBoxId] = useState<string | null>(null);
 
   // Effects
   const clearMergePreview = useCallback(() => {
@@ -464,26 +465,33 @@ export const useEditMode = () => {
       const boxToUnmerge = boxes.find((box) => box.id === boxId);
       if (!boxToUnmerge) return;
 
-      const individualBoxes: GridBox[] = [];
-      for (let i = 0; i < boxToUnmerge.width; i++) {
-        for (let j = 0; j < boxToUnmerge.height; j++) {
-          individualBoxes.push({
-            id: `${Date.now()}-${i}-${j}`,
-            x: boxToUnmerge.x + i,
-            y: boxToUnmerge.y + j,
-            width: 1,
-            height: 1,
-            color: boxToUnmerge.color,
-          });
-        }
-      }
+      // Start explode animation
+      setExplodingBoxId(boxId);
 
-      const newBoxes = boxes
-        .filter((box) => box.id !== boxId)
-        .concat(individualBoxes);
-      setBoxes(newBoxes);
-      saveToHistory(newBoxes);
-      setContextMenu({ visible: false, x: 0, y: 0, boxId: '' });
+      // Wait for animation to complete before actually unmerging
+      setTimeout(() => {
+        const individualBoxes: GridBox[] = [];
+        for (let i = 0; i < boxToUnmerge.width; i++) {
+          for (let j = 0; j < boxToUnmerge.height; j++) {
+            individualBoxes.push({
+              id: `${Date.now()}-${i}-${j}`,
+              x: boxToUnmerge.x + i,
+              y: boxToUnmerge.y + j,
+              width: 1,
+              height: 1,
+              color: boxToUnmerge.color,
+            });
+          }
+        }
+
+        const newBoxes = boxes
+          .filter((box) => box.id !== boxId)
+          .concat(individualBoxes);
+        setBoxes(newBoxes);
+        saveToHistory(newBoxes);
+        setContextMenu({ visible: false, x: 0, y: 0, boxId: '' });
+        setExplodingBoxId(null);
+      }, 300); 
     },
     [boxes, saveToHistory]
   );
@@ -934,6 +942,7 @@ export const useEditMode = () => {
     dragArea,
     isDraggingWidget,
     draggedWidgetType,
+    explodingBoxId,
 
     // Actions
     toggleEditMode,

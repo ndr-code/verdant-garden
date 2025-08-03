@@ -78,8 +78,8 @@
 - [ ] Add image filters and basic editing tools
 - [ ] Support multiple image formats
 
-
 Mungkin :
+
 - Grid-base app producitivity tools
 - Todo dihilangkan, Notes ada opsi memunculkan checkbox
 - Note pendek akan ditampilkan penuh di widgetm Note panjang hanya menampilkan judul dan ada indikasi bawah Note ini panjang, fungsikan RTE (?)
@@ -88,4 +88,4 @@ Mungkin :
 - Button untuk randomize konfigurasi box
 - Button untuk membuat 7x7 individual box kosong
 - Slider untuk custom ukuran box, ukuran gap, ukuran rounded
-- Tambahkan animasi explode
+- [x] Tambahkan animasi explode

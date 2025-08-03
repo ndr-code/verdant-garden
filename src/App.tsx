@@ -38,6 +38,7 @@ function App() {
     colorPicker,
     assignmentMode,
     mergePreview,
+    explodingBoxId,
     toggleEditMode,
     undo,
     redo,
@@ -193,6 +194,7 @@ function App() {
           ghostPositions={getGhostPositions()}
           assignmentMode={assignmentMode}
           mergePreview={mergePreview}
+          explodingBoxId={explodingBoxId}
           onAddBox={addBox}
           onAssignWidget={assignWidgetToBox}
           onAssignWidgetByDrag={handleAssignWidgetByDrag}

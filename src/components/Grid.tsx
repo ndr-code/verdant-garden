@@ -26,6 +26,7 @@ interface GridProps {
     height: number;
     boxIds: string[];
   } | null;
+  explodingBoxId: string | null;
   onAddBox: (x: number, y: number) => void;
   onAssignWidget: (boxId: string) => void;
   onAssignWidgetByDrag?: (boxId: string, widgetType: string) => void;
@@ -62,6 +63,7 @@ const Grid: React.FC<GridProps> = ({
   ghostPositions,
   assignmentMode,
   mergePreview,
+  explodingBoxId,
   onAddBox,
   onAssignWidget,
   onAssignWidgetByDrag,
@@ -264,6 +266,7 @@ const Grid: React.FC<GridProps> = ({
                 ${dragOverBox === box.id ? 'ring-2 ring-blue-400' : ''}
                 ${assignmentMode.active && !box.widget ? 'assignment-glow' : ''}
                 ${assignmentMode.active && box.widget ? 'opacity-50' : ''}
+                ${explodingBoxId === box.id ? 'animate-explode' : ''}
               `}
               style={{
                 backgroundColor: box.color || '#ffffff',
